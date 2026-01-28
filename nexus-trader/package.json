@@ -1,0 +1,32 @@
+{
+  "name": "nexus-auto-trader",
+  "version": "1.0.0",
+  "description": "Cryptocurrency and stock trading bot with sentiment analysis",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve",
+    "dev": "npx serve -l 3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/nexus-trader.git"
+  },
+  "keywords": [
+    "crypto",
+    "trading",
+    "bot",
+    "cryptocurrency",
+    "stocks",
+    "sentiment-analysis",
+    "technical-analysis",
+    "rsi",
+    "ema",
+    "fear-greed-index"
+  ],
+  "author": "Mike",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/nexus-trader/issues"
+  },
+  "homepage": "https://github.com/yourusername/nexus-trader#readme"
+}

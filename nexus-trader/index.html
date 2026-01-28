@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>💰 NEXUS AUTO TRADER</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#050505;color:#fff}
+    .header{background:#0a0a0a;padding:12px 20px;border-bottom:1px solid #1a1a1a;position:sticky;top:0;z-index:100}
+    .header-inner{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo h1{font-size:20px;color:#22c55e}
+    .logo .badge{background:#22c55e;color:#000;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-left:6px;animation:pulse 1s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+    .logo p{font-size:11px;color:#666}
+    .btn{border:none;padding:10px 20px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px}
+    .btn-stop{background:#ef4444;color:#fff}
+    .btn-start{background:#22c55e;color:#000}
+    
+    .stats{background:linear-gradient(180deg,#0a0a0a,#050505);padding:20px;border-bottom:1px solid#1a1a1a}
+    .stats-grid{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:2fr repeat(5,1fr);gap:12px}
+    @media(max-width:900px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
+    .profit-box h2{font-size:11px;color:#666;margin-bottom:4px}
+    .profit-box .amt{font-size:40px;font-weight:900}
+    .profit-box .pct{font-size:18px}
+    .profit-box.up .amt,.profit-box.up .pct{color:#22c55e}
+    .profit-box.down .amt,.profit-box.down .pct{color:#ef4444}
+    .stat{background:rgba(255,255,255,0.02);border-radius:8px;padding:10px;text-align:center}
+    .stat h3{font-size:9px;color:#555;margin-bottom:3px}
+    .stat .val{font-size:18px;font-weight:700}
+    .stat .sub{font-size:9px;color:#444}
+    .stat .val.up{color:#22c55e}.stat .val.down{color:#ef4444}
+    
+    .main{max-width:1400px;margin:0 auto;padding:15px}
+    .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{background:#0a0a0a;border:1px solid#1a1a1a;border-radius:8px;overflow:hidden}
+    .card-head{padding:10px 12px;border-bottom:1px solid#1a1a1a;display:flex;justify-content:space-between;font-size:13px;font-weight:600}
+    .card-body{max-height:280px;overflow-y:auto}
+    
+    .pos-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;padding:8px 12px;border-bottom:1px solid#111;align-items:center;font-size:11px}
+    .pos-row:hover{background:rgba(255,255,255,0.02)}
+    .pos-row.hot{background:rgba(34,197,94,0.1);border-left:2px solid#22c55e}
+    .pos-row.cold{background:rgba(239,68,68,0.08);border-left:2px solid#ef4444}
+    .pos-info{display:flex;align-items:center;gap:6px}
+    .pos-info img{width:20px;height:20px;border-radius:50%}
+    .pos-info .sym{font-weight:700}
+    .pos-info .amt{font-size:9px;color:#666;display:block}
+    .pos-pnl{text-align:right}
+    .pos-pnl .p{font-weight:700}.pos-pnl .p.up{color:#22c55e}.pos-pnl .p.down{color:#ef4444}
+    .pos-pnl .v{font-size:9px;color:#666}
+    
+    .mkt-row{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-bottom:1px solid#111;font-size:11px}
+    .mkt-row:hover{background:rgba(255,255,255,0.02)}
+    .mkt-info{display:flex;align-items:center;gap:6px}
+    .mkt-info img{width:16px;height:16px;border-radius:50%}
+    .mkt-stats{display:flex;gap:10px;align-items:center}
+    .mkt-stats .chg{font-weight:600}.mkt-stats .chg.up{color:#22c55e}.mkt-stats .chg.down{color:#ef4444}
+    
+    .trade-row{padding:6px 12px;border-bottom:1px solid#111;font-size:11px}
+    .trade-row.win{background:rgba(34,197,94,0.05)}
+    .trade-row.loss{background:rgba(239,68,68,0.05)}
+    .trade-top{display:flex;justify-content:space-between}
+    .trade-top .pnl{font-weight:700}.trade-top .pnl.up{color:#22c55e}.trade-top .pnl.down{color:#ef4444}
+    .trade-btm{font-size:9px;color:#555}
+    
+    .log{grid-column:span 3}@media(max-width:900px){.log{grid-column:span 1}}
+    .log-body{max-height:100px;overflow-y:auto;padding:6px;font-family:monospace;font-size:10px}
+    .log-entry{padding:2px 4px;border-radius:2px;margin-bottom:1px}
+    .log-entry.success{background:rgba(34,197,94,0.1);color:#22c55e}
+    .log-entry.warn{background:rgba(234,179,8,0.1);color:#eab308}
+    .log-entry.info{color:#555}
+    .log-entry.trade{background:rgba(59,130,246,0.1);color:#3b82f6}
+    
+    .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
+    .loading h1{color:#22c55e;font-size:24px;margin:15px 0}
+    .loading-bar{width:200px;height:4px;background:#222;border-radius:2px;overflow:hidden}
+    .loading-fill{height:100%;background:#22c55e;animation:load 1s infinite}
+    @keyframes load{0%{width:0}50%{width:70%}100%{width:100%}}
+    
+    .empty{padding:20px;text-align:center;color:#444;font-size:11px}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+    
+    /* Settings Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:center;justify-content:center}
+    .modal{background:#111;border:1px solid#333;border-radius:12px;width:90%;max-width:500px;max-height:85vh;overflow:hidden}
+    .modal-head{padding:15px;border-bottom:1px solid#333;display:flex;justify-content:space-between;align-items:center}
+    .modal-head h2{font-size:18px}
+    .modal-body{padding:15px;overflow-y:auto;max-height:calc(85vh - 60px)}
+    .form-group{margin-bottom:15px}
+    .form-group label{display:block;font-size:11px;color:#888;margin-bottom:4px}
+    .form-group input{width:100%;padding:10px;background:#1a1a1a;border:1px solid#333;border-radius:6px;color:#fff;font-size:13px}
+    .form-section{background:#0a0a0a;border-radius:8px;padding:12px;margin-bottom:12px}
+    .form-section h3{font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+    .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0}
+    .toggle{width:44px;height:24px;background:#333;border-radius:12px;position:relative;cursor:pointer}
+    .toggle.on{background:#22c55e}
+    .toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:0.2s}
+    .toggle.on::after{left:22px}
+    .btn-settings{background:#333;padding:8px 16px}
+    .btn-connect{background:#3b82f6;width:100%;margin-top:8px}
+    .connected-badge{background:#22c55e;color:#000;padding:2px 8px;border-radius:4px;font-size:10px}
+    
+    /* Tabs */
+    .tabs{display:flex;border-bottom:1px solid#1a1a1a;background:#0a0a0a;overflow-x:auto}
+    .tab{padding:12px 20px;font-size:12px;color:#666;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
+    .tab:hover{color:#999}
+    .tab.active{color:#22c55e;border-bottom-color:#22c55e}
+    
+    /* Asset Detail Modal */
+    .asset-detail{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:150;overflow-y:auto}
+    .asset-detail-content{max-width:800px;margin:20px auto;padding:20px}
+    .asset-header{display:flex;align-items:center;gap:15px;margin-bottom:20px}
+    .asset-header img{width:60px;height:60px;border-radius:50%}
+    .asset-header h2{font-size:28px}
+    .asset-chart{background:#111;border-radius:8px;padding:20px;margin-bottom:20px}
+    .asset-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .asset-stat{background:#111;border-radius:8px;padding:12px;text-align:center}
+    .asset-stat .label{font-size:10px;color:#666}
+    .asset-stat .value{font-size:18px;font-weight:700}
+    
+    /* Sort buttons */
+    .sort-bar{display:flex;gap:8px;padding:10px 12px;border-bottom:1px solid#1a1a1a;flex-wrap:wrap}
+    .sort-btn{padding:4px 10px;font-size:10px;background:#1a1a1a;border:none;color:#888;border-radius:4px;cursor:pointer}
+    .sort-btn.active{background:#22c55e;color:#000}
+    
+    /* Strategy Selector */
+    .strategy-bar{background:#0a0a0a;border-bottom:1px solid#1a1a1a;padding:8px 20px}
+    .strategy-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .strategy-label{font-size:11px;color:#666}
+    .strategy-btns{display:flex;gap:4px;flex-wrap:wrap}
+    .strategy-btn{padding:6px 12px;font-size:11px;border:1px solid#333;background:#111;color:#888;border-radius:4px;cursor:pointer;transition:all 0.2s}
+    .strategy-btn:hover{border-color:#555;color:#fff}
+    .strategy-btn.active{background:#22c55e;border-color:#22c55e;color:#000;font-weight:700}
+    .strategy-btn.yolo{border-color:#ef4444}.strategy-btn.yolo.active{background:#ef4444;border-color:#ef4444}
+    .strategy-btn.scalper{border-color:#3b82f6}.strategy-btn.scalper.active{background:#3b82f6;border-color:#3b82f6}
+    .strategy-info{font-size:10px;color:#666;margin-left:auto}
+    
+    /* Market Filters */
+    .filter-bar{background:#0d0d0d;border:1px solid#1a1a1a;border-radius:8px;padding:12px;margin-bottom:12px}
+    .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+    .filter-row:last-child{margin-bottom:0}
+    .filter-label{font-size:10px;color:#666;min-width:60px}
+    .filter-group{display:flex;gap:4px;flex-wrap:wrap}
+    .filter-btn{padding:4px 10px;font-size:10px;background:#111;border:1px solid#333;color:#888;border-radius:4px;cursor:pointer;transition:all 0.15s}
+    .filter-btn:hover{border-color:#555;color:#fff}
+    .filter-btn.active{background:#f97316;border-color:#f97316;color:#000;font-weight:600}
+    .filter-btn.green.active{background:#22c55e;border-color:#22c55e}
+    .filter-btn.red.active{background:#ef4444;border-color:#ef4444}
+    .filter-btn.blue.active{background:#3b82f6;border-color:#3b82f6}
+    .search-input{background:#111;border:1px solid#333;color:#fff;padding:6px 12px;border-radius:4px;font-size:11px;width:150px}
+    .search-input:focus{outline:none;border-color:#f97316}
+    .search-input::placeholder{color:#555}
+    
+    /* Quick Stats Cards */
+    .quick-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+    .quick-stat{background:#111;border:1px solid#222;border-radius:6px;padding:10px;text-align:center;cursor:pointer;transition:all 0.15s}
+    .quick-stat:hover{border-color:#444;transform:translateY(-1px)}
+    .quick-stat.active{border-color:#f97316;background:#1a1a1a}
+    .quick-stat h4{font-size:10px;color:#666;margin-bottom:4px;text-transform:uppercase}
+    .quick-stat .val{font-size:18px;font-weight:700}
+    .quick-stat .sub{font-size:9px;color:#555;margin-top:2px}
+    
+    /* Market Row Enhanced */
+    .mkt-row-enhanced{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid#1a1a1a;transition:background 0.15s}
+    .mkt-row-enhanced:hover{background:#1a1a1a}
+    .mkt-row-enhanced .coin{display:flex;align-items:center;gap:8px}
+    .mkt-row-enhanced .coin img{width:28px;height:28px;border-radius:50%}
+    .mkt-row-enhanced .coin-info{display:flex;flex-direction:column}
+    .mkt-row-enhanced .coin-sym{font-weight:700;font-size:13px}
+    .mkt-row-enhanced .coin-name{font-size:9px;color:#666}
+    .mkt-row-enhanced .price{font-family:monospace;font-size:12px;text-align:right}
+    .mkt-row-enhanced .change{font-size:11px;font-weight:600;text-align:right}
+    .mkt-row-enhanced .volume{font-size:10px;color:#888;text-align:right}
+    .mkt-row-enhanced .rsi{font-size:10px;text-align:center;padding:2px 6px;border-radius:3px}
+    .mkt-row-enhanced .actions{display:flex;gap:4px}
+    .quick-buy{padding:4px 8px;font-size:9px;background:#22c55e;border:none;color:#000;border-radius:3px;cursor:pointer;font-weight:600}
+    .quick-buy:hover{background:#16a34a}
+    .view-btn{padding:4px 8px;font-size:9px;background:#333;border:none;color:#fff;border-radius:3px;cursor:pointer}
+    .view-btn:hover{background:#444}
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// =====================================================
+// NEXUS AUTO TRADER - Paper Mode with REAL Data
+// Auto-starts trading immediately!
+// =====================================================
+
+const CONFIG = {
+  START: 100,
+  FEE: 0.007,           // 0.7% per trade (Coinbase taker + spread)
+  MAX_POS: 8,           // Fewer positions, more focused (was 20)
+  MIN_POS: 5,           // Min $5 per position (was 3)
+  POS_SIZE: 0.10,       // 10% of portfolio per position
+  // Profit/Loss targets handled in runBot with RSI logic
+  // Key insight: Buy when RSI < 35, Sell when RSI > 65
+};
+
+// Strategy Profiles
+const STRATEGIES = {
+  conservative: {
+    name: '🛡️ Conservative',
+    desc: 'Low risk, steady gains. Target: 0.3-0.5%/day',
+    takeProfit: 1.5,
+    stopLoss: -0.8,
+    rsiOversold: 25,
+    rsiOverbought: 75,
+    maxPositions: 3,
+    positionSize: 0.15,
+    minScore: 60,
+    tradeFreq: 1  // trades per opportunity
+  },
+  moderate: {
+    name: '⚖️ Moderate',
+    desc: 'Balanced risk/reward. Target: 0.5-1%/day',
+    takeProfit: 2.0,
+    stopLoss: -1.2,
+    rsiOversold: 30,
+    rsiOverbought: 70,
+    maxPositions: 5,
+    positionSize: 0.12,
+    minScore: 50,
+    tradeFreq: 2
+  },
+  aggressive: {
+    name: '🔥 Aggressive',
+    desc: 'Higher risk, bigger swings. Target: 1-3%/day',
+    takeProfit: 2.5,
+    stopLoss: -1.5,
+    rsiOversold: 35,
+    rsiOverbought: 65,
+    maxPositions: 8,
+    positionSize: 0.10,
+    minScore: 40,
+    tradeFreq: 3
+  },
+  yolo: {
+    name: '🚀 YOLO',
+    desc: '⚠️ MAX RISK! Can lose everything. Target: 3-10%/day or bust',
+    takeProfit: 4.0,
+    stopLoss: -3.0,
+    rsiOversold: 40,
+    rsiOverbought: 60,
+    maxPositions: 12,
+    positionSize: 0.20,
+    minScore: 30,
+    tradeFreq: 5
+  },
+  scalper: {
+    name: '⚡ Scalper',
+    desc: 'Many small trades. Target: 0.5-2%/day from volume',
+    takeProfit: 0.8,
+    stopLoss: -0.5,
+    rsiOversold: 40,
+    rsiOverbought: 60,
+    maxPositions: 15,
+    positionSize: 0.05,
+    minScore: 25,
+    tradeFreq: 10
+  }
+};
+
+let state = {
+  running: true,  // START IMMEDIATELY
+  mode: 'paper',  // 'paper' or 'live'
+  strategy: 'moderate', // conservative, moderate, aggressive, yolo, scalper
+  wallet: CONFIG.START,
+  positions: [],
+  trades: [],
+  cryptos: [],
+  stocks: [],
+  priceHistory: {},
+  fees: 0,
+  lastUpdate: null,
+  logs: [],
+  tick: 0,
+  tab: 'dashboard', // dashboard, crypto, stocks, positions, trades
+  showSettings: false,
+  selectedAsset: null,
+  sortBy: 'h1', // h1, h24, price, name
+  
+  // SENTIMENT & MARKET INTELLIGENCE
+  fearGreed: 50,           // 0-100 (0=extreme fear, 100=extreme greed)
+  fearGreedClass: 'Neutral',
+  marketTrend: 'neutral',  // bullish, bearish, neutral
+  topGainers: [],          // Top performing in last hour
+  topLosers: [],           // Worst performing
+  volumeSpikes: [],        // Unusual volume activity
+  momentumLeaders: [],     // Strong momentum
+  
+  // API Settings
+  coinbaseKey: '',
+  coinbaseSecret: '',
+  coinbaseConnected: false,
+  alpacaKey: '',
+  alpacaSecret: '',
+  alpacaPaper: true,
+  alpacaConnected: false,
+  telegramToken: '',
+  telegramChatId: '',
+  
+  // MARKET FILTERS
+  marketView: 'all',        // all, gainers, losers, volume, momentum, oversold, overbought
+  priceFilter: 'all',       // all, under1, 1to10, 10to100, 100to1000, over1000
+  changeFilter: 'all',      // all, up5, up10, down5, down10
+  searchQuery: '',          // search by symbol
+  showOnlyTradeable: false, // only show high volume
+  sectorFilter: 'all'       // all, Tech, Finance, Health, Consumer, Energy, etc
+};
+
+// Helpers
+const fmt = n => {
+  if(!n||isNaN(n))return'$0.00';
+  const a=Math.abs(n),s=n<0?'-':'';
+  if(a>=1e6)return s+'$'+(a/1e6).toFixed(2)+'M';
+  if(a>=1e3)return s+'$'+(a/1e3).toFixed(2)+'K';
+  return s+'$'+a.toFixed(2);
+};
+const pct = n => (!n||isNaN(n))?'0.00%':(n>=0?'+':'')+n.toFixed(2)+'%';
+const log = (m,t='info') => {
+  console.log(m);
+  state.logs.unshift({time:Date.now(),msg:m,type:t});
+  if(state.logs.length>100)state.logs.pop();
+};
+
+// Filter coins based on current filter settings
+const filterCoins = (coins) => {
+  let filtered = [...coins].map(c => ({...c, mom: getMomentum(c.id)}));
+  
+  // Search filter
+  if(state.searchQuery) {
+    filtered = filtered.filter(c => c.sym.includes(state.searchQuery) || c.id.includes(state.searchQuery.toLowerCase()));
+  }
+  
+  // Market view filter
+  if(state.marketView === 'gainers') {
+    filtered = filtered.filter(c => c.h1 > 0).sort((a,b) => b.h1 - a.h1);
+  } else if(state.marketView === 'losers') {
+    filtered = filtered.filter(c => c.h1 < 0).sort((a,b) => a.h1 - b.h1);
+  } else if(state.marketView === 'volume') {
+    filtered = filtered.filter(c => c.vol > 100000000).sort((a,b) => b.vol - a.vol);
+  } else if(state.marketView === 'momentum') {
+    filtered = filtered.filter(c => c.h1 > 1 && c.h24 > 2);
+  } else if(state.marketView === 'oversold') {
+    filtered = filtered.filter(c => {
+      const analysis = analyzeAsset(c.id);
+      return analysis.rsi < 35;
+    });
+  } else if(state.marketView === 'overbought') {
+    filtered = filtered.filter(c => {
+      const analysis = analyzeAsset(c.id);
+      return analysis.rsi > 65;
+    });
+  }
+  
+  // Price filter
+  if(state.priceFilter === 'under1') {
+    filtered = filtered.filter(c => c.price < 1);
+  } else if(state.priceFilter === '1to10') {
+    filtered = filtered.filter(c => c.price >= 1 && c.price < 10);
+  } else if(state.priceFilter === '10to100') {
+    filtered = filtered.filter(c => c.price >= 10 && c.price < 100);
+  } else if(state.priceFilter === '100to1000') {
+    filtered = filtered.filter(c => c.price >= 100 && c.price < 1000);
+  } else if(state.priceFilter === 'over1000') {
+    filtered = filtered.filter(c => c.price >= 1000);
+  }
+  
+  // Change filter
+  if(state.changeFilter === 'up5') {
+    filtered = filtered.filter(c => c.h1 >= 5);
+  } else if(state.changeFilter === 'up10') {
+    filtered = filtered.filter(c => c.h1 >= 10);
+  } else if(state.changeFilter === 'down5') {
+    filtered = filtered.filter(c => c.h1 <= -5);
+  } else if(state.changeFilter === 'down10') {
+    filtered = filtered.filter(c => c.h1 <= -10);
+  }
+  
+  // High volume only
+  if(state.showOnlyTradeable) {
+    filtered = filtered.filter(c => c.vol > 50000000);
+  }
+  
+  // Sort
+  filtered.sort((a,b) => {
+    if(state.sortBy === 'h1') return b.h1 - a.h1;
+    if(state.sortBy === 'h24') return b.h24 - a.h24;
+    if(state.sortBy === 'price') return b.price - a.price;
+    if(state.sortBy === 'vol') return b.vol - a.vol;
+    if(state.sortBy === 'name') return a.sym.localeCompare(b.sym);
+    return 0;
+  });
+  
+  return filtered;
+};
+
+// Quick buy from market view
+const quickBuy = (id) => {
+  const crypto = state.cryptos.find(c => c.id === id);
+  if(!crypto) return;
+  
+  // Check if already holding
+  if(state.positions.find(p => p.id === id)) {
+    log(`⚠️ Already holding ${crypto.sym}`, 'warn');
+    return;
+  }
+  
+  // Calculate position size (10% of wallet, max $20)
+  const size = Math.min(state.wallet * 0.1, 20, state.wallet * 0.5);
+  
+  if(size < CONFIG.MIN_POS) {
+    log('❌ Insufficient funds', 'warn');
+    return;
+  }
+  
+  buy(crypto, size);
+  log(`🛒 Manual BUY ${crypto.sym} @ ${fmt(crypto.price)}`, 'trade');
+  render();
+};
+
+// Filter stocks based on current filter settings
+const filterStocks = (stocks) => {
+  let filtered = [...stocks].map(s => ({...s, mom: getMomentum(s.id)}));
+  
+  // Search filter
+  if(state.searchQuery) {
+    filtered = filtered.filter(s => s.sym.includes(state.searchQuery) || (s.name && s.name.toUpperCase().includes(state.searchQuery)));
+  }
+  
+  // Sector filter
+  if(state.sectorFilter !== 'all') {
+    filtered = filtered.filter(s => s.sector === state.sectorFilter);
+  }
+  
+  // Market view filter
+  if(state.marketView === 'gainers') {
+    filtered = filtered.filter(s => s.h24 > 0).sort((a,b) => b.h24 - a.h24);
+  } else if(state.marketView === 'losers') {
+    filtered = filtered.filter(s => s.h24 < 0).sort((a,b) => a.h24 - b.h24);
+  }
+  
+  // Price filter (adjusted for stocks)
+  if(state.priceFilter === 'under1') {
+    filtered = filtered.filter(s => s.price < 10);
+  } else if(state.priceFilter === '1to10') {
+    filtered = filtered.filter(s => s.price >= 10 && s.price < 50);
+  } else if(state.priceFilter === '10to100') {
+    filtered = filtered.filter(s => s.price >= 50 && s.price < 200);
+  } else if(state.priceFilter === '100to1000') {
+    filtered = filtered.filter(s => s.price >= 200 && s.price < 500);
+  } else if(state.priceFilter === 'over1000') {
+    filtered = filtered.filter(s => s.price >= 500);
+  }
+  
+  // Sort
+  filtered.sort((a,b) => {
+    if(state.sortBy === 'h1') return b.h24 - a.h24;
+    if(state.sortBy === 'price') return b.price - a.price;
+    if(state.sortBy === 'vol') return b.vol - a.vol;
+    if(state.sortBy === 'name') return a.sym.localeCompare(b.sym);
+    return 0;
+  });
+  
+  return filtered;
+};
+
+// Quick buy stock
+const quickBuyStock = (id) => {
+  const stock = state.stocks.find(s => s.id === id);
+  if(!stock) return;
+  
+  if(state.positions.find(p => p.id === id)) {
+    log(`⚠️ Already holding ${stock.sym}`, 'warn');
+    return;
+  }
+  
+  const size = Math.min(state.wallet * 0.1, 25, state.wallet * 0.5);
+  
+  if(size < CONFIG.MIN_POS) {
+    log('❌ Insufficient funds', 'warn');
+    return;
+  }
+  
+  // Buy stock (lower fees)
+  const fee = size * 0.00003; // ~0.003% for stocks
+  const net = size - fee;
+  const qty = net / stock.price;
+  
+  state.positions.push({
+    id: stock.id,
+    sym: stock.sym,
+    img: null,
+    qty,
+    entry: stock.price,
+    time: Date.now(),
+    type: 'stock'
+  });
+  
+  state.wallet -= size;
+  state.fees += fee;
+  log(`🛒 Manual BUY ${stock.sym} @ ${fmt(stock.price)}`, 'trade');
+  render();
+};
+
+// Calculations
+const getPrice = id => {
+  const crypto = state.cryptos.find(c=>c.id===id);
+  if(crypto) return crypto.price;
+  const stock = state.stocks.find(s=>s.id===id);
+  if(stock) return stock.price;
+  return 0;
+};
+const getPosValue = pos => {
+  const price = getPrice(pos.id);
+  const value = pos.qty * price;
+  const pnl = value - (pos.qty * pos.entry);
+  const pnlPct = ((price - pos.entry) / pos.entry) * 100;
+  return { price, value, pnl, pnlPct };
+};
+const getTotalPosValue = () => state.positions.reduce((s,p) => s + getPosValue(p).value, 0);
+const getPortfolio = () => state.wallet + getTotalPosValue();
+const getProfit = () => getPortfolio() - CONFIG.START;
+const getProfitPct = () => (getProfit() / CONFIG.START) * 100;
+const getWins = () => state.trades.filter(t=>t.pnl>0).length;
+const getLosses = () => state.trades.filter(t=>t.pnl<=0).length;
+const getWinRate = () => state.trades.length ? (getWins()/state.trades.length*100) : 0;
+
+// Momentum
+const getMomentum = id => {
+  const h = state.priceHistory[id] || [];
+  if(h.length < 2) return { short: 0, trend: '➡️' };
+  const short = ((h[h.length-1] - h[h.length-2]) / h[h.length-2]) * 100;
+  const med = h.length >= 4 ? ((h[h.length-1] - h[h.length-4]) / h[h.length-4]) * 100 : short;
+  let trend = '➡️';
+  if(short > 0.3) trend = '🚀';
+  else if(short > 0.1) trend = '📈';
+  else if(short < -0.3) trend = '💥';
+  else if(short < -0.1) trend = '📉';
+  return { short, med, trend };
+};
+
+// Trading
+const buy = (crypto, amount) => {
+  if(amount < CONFIG.MIN_POS || amount > state.wallet) return false;
+  
+  const fee = amount * CONFIG.FEE;
+  const net = amount - fee;
+  const qty = net / crypto.price;
+  
+  const existing = state.positions.find(p => p.id === crypto.id);
+  if(existing) {
+    const totalCost = (existing.qty * existing.entry) + net;
+    const totalQty = existing.qty + qty;
+    existing.entry = totalCost / totalQty;
+    existing.qty = totalQty;
+  } else {
+    state.positions.push({
+      id: crypto.id,
+      sym: crypto.sym,
+      img: crypto.img,
+      qty,
+      entry: crypto.price,
+      time: Date.now()
+    });
+  }
+  
+  state.wallet -= amount;
+  state.fees += fee;
+  log(`📥 BUY ${crypto.sym} ${fmt(amount)} @ ${fmt(crypto.price)}`, 'trade');
+  return true;
+};
+
+const sell = (pos, reason) => {
+  const { price, value, pnl, pnlPct } = getPosValue(pos);
+  const fee = value * CONFIG.FEE;
+  const net = value - fee;
+  
+  state.trades.unshift({
+    id: Date.now(),
+    sym: pos.sym,
+    entry: pos.entry,
+    exit: price,
+    pnl: pnl - fee,
+    pnlPct,
+    reason,
+    time: Date.now()
+  });
+  
+  state.wallet += net;
+  state.fees += fee;
+  state.positions = state.positions.filter(p => p.id !== pos.id);
+  
+  const emoji = pnl > 0 ? '💰' : '📉';
+  log(`${emoji} SELL ${pos.sym} ${pct(pnlPct)} (${fmt(pnl-fee)}) - ${reason}`, pnl > 0 ? 'success' : 'warn');
+};
+
+const sellAll = () => {
+  [...state.positions].forEach(p => sell(p, 'EXIT ALL'));
+  state.running = false;
+  log('🛑 ALL POSITIONS CLOSED', 'warn');
+};
+
+// ===========================================
+// IMPROVED TRADING STRATEGY
+// Based on research: RSI + EMA crossover + Grid Trading
+// Key changes:
+// 1. Only buy when RSI < 35 (oversold) - wait for dips
+// 2. Sell when RSI > 65 (overbought) - sell into strength  
+// 3. Use EMA crossover confirmation
+// 4. Wider profit targets (2.5%+) to overcome fees
+// 5. Tighter stop loss (-1.2%) to cut losers fast
+// 6. Grid-style: accumulate on dips, sell on rises
+// ===========================================
+
+// Calculate RSI (Relative Strength Index)
+const calcRSI = (prices, period = 14) => {
+  if(prices.length < period + 1) return 50;
+  let gains = 0, losses = 0;
+  for(let i = prices.length - period; i < prices.length; i++) {
+    const diff = prices[i] - prices[i-1];
+    if(diff > 0) gains += diff;
+    else losses -= diff;
+  }
+  if(losses === 0) return 100;
+  const rs = gains / losses;
+  return 100 - (100 / (1 + rs));
+};
+
+// Calculate EMA (Exponential Moving Average)
+const calcEMA = (prices, period) => {
+  if(prices.length < period) return prices[prices.length - 1] || 0;
+  const k = 2 / (period + 1);
+  let ema = prices.slice(0, period).reduce((a,b) => a+b, 0) / period;
+  for(let i = period; i < prices.length; i++) {
+    ema = prices[i] * k + ema * (1 - k);
+  }
+  return ema;
+};
+
+// Analyze asset with multiple indicators
+const analyzeAsset = (id) => {
+  const hist = state.priceHistory[id] || [];
+  if(hist.length < 15) return { signal: 'wait', score: 0, rsi: 50 };
+  
+  const rsi = calcRSI(hist, 14);
+  const ema9 = calcEMA(hist, 9);
+  const ema21 = calcEMA(hist, Math.min(21, hist.length));
+  const currentPrice = hist[hist.length - 1];
+  const prevPrice = hist[hist.length - 2] || currentPrice;
+  const priceChange = ((currentPrice - prevPrice) / prevPrice) * 100;
+  
+  let buyScore = 0;
+  let sellScore = 0;
+  
+  // RSI signals (most important for timing)
+  if(rsi < 30) buyScore += 40;      // Strong oversold
+  else if(rsi < 35) buyScore += 30;  // Oversold
+  else if(rsi < 40) buyScore += 15;  // Approaching oversold
+  
+  if(rsi > 70) sellScore += 40;      // Strong overbought
+  else if(rsi > 65) sellScore += 30; // Overbought
+  else if(rsi > 60) sellScore += 15; // Approaching overbought
+  
+  // EMA crossover (trend confirmation)
+  if(ema9 > ema21 && currentPrice > ema9) buyScore += 25;  // Bullish trend
+  if(ema9 < ema21 && currentPrice < ema9) sellScore += 25; // Bearish trend
+  
+  // Price momentum
+  if(priceChange > 0.5) buyScore += 10;  // Positive momentum
+  if(priceChange < -0.5) sellScore += 10; // Negative momentum
+  
+  // Determine signal
+  let signal = 'hold';
+  let score = 0;
+  
+  if(buyScore >= 40 && rsi < 40) {
+    signal = 'buy';
+    score = buyScore;
+  } else if(sellScore >= 40 && rsi > 60) {
+    signal = 'sell';
+    score = sellScore;
+  }
+  
+  return { signal, score, rsi, ema9, ema21, buyScore, sellScore };
+};
+
+// ===========================================
+// INTELLIGENT TRADING BOT
+// Uses: Fear/Greed Index, Market Trends, RSI, EMA, Volume
+// Strategy: Contrarian + Momentum hybrid
+// "Be fearful when others are greedy, greedy when others are fearful"
+// ===========================================
+
+const runBot = () => {
+  if(!state.running || state.cryptos.length === 0) return;
+  state.tick++;
+  
+  // Refresh sentiment every 100 ticks (~3 mins)
+  if(state.tick % 100 === 0) fetchSentiment();
+  
+  const strat = STRATEGIES[state.strategy];
+  const fg = state.fearGreed;
+  
+  // ============ SMART MARKET CONTEXT ============
+  // Adjust behavior based on Fear/Greed
+  let marketMultiplier = 1;
+  let buyBias = 0;
+  let sellBias = 0;
+  
+  // CONTRARIAN LOGIC: Buy in fear, sell in greed
+  if(fg <= 25) {
+    // EXTREME FEAR = Best buying opportunity
+    buyBias = 30;
+    marketMultiplier = 1.5;
+    if(state.tick % 50 === 0) log('😱 EXTREME FEAR - Buying opportunity!', 'success');
+  } else if(fg <= 40) {
+    // FEAR = Good buying
+    buyBias = 15;
+    marketMultiplier = 1.2;
+  } else if(fg >= 75) {
+    // EXTREME GREED = Take profits, be cautious
+    sellBias = 30;
+    marketMultiplier = 0.5;
+    if(state.tick % 50 === 0) log('🤑 EXTREME GREED - Taking profits!', 'warn');
+  } else if(fg >= 60) {
+    // GREED = Be careful
+    sellBias = 15;
+    marketMultiplier = 0.8;
+  }
+  
+  // Adjust for market trend
+  if(state.marketTrend === 'bullish') {
+    buyBias += 10;
+  } else if(state.marketTrend === 'bearish') {
+    sellBias += 10;
+  }
+  
+  // ============ MANAGE EXISTING POSITIONS ============
+  [...state.positions].forEach(pos => {
+    const { pnlPct, pnl } = getPosValue(pos);
+    const holdSec = (Date.now() - pos.time) / 1000;
+    const analysis = analyzeAsset(pos.id);
+    
+    // Dynamic take profit based on market sentiment
+    const adjustedTP = strat.takeProfit * (fg >= 60 ? 0.7 : fg <= 40 ? 1.3 : 1);
+    
+    // PROFIT TAKING
+    if(pnlPct >= adjustedTP) {
+      sell(pos, `💰 PROFIT +${pnlPct.toFixed(1)}%`);
+      return;
+    }
+    
+    // In GREED market, take profits earlier
+    if(fg >= 65 && pnlPct >= strat.takeProfit * 0.5) {
+      sell(pos, `🤑 GREED EXIT +${pnlPct.toFixed(1)}%`);
+      return;
+    }
+    
+    // RSI overbought exit
+    if(pnlPct >= strat.takeProfit * 0.5 && analysis.rsi > strat.rsiOverbought) {
+      sell(pos, `📈 RSI ${analysis.rsi.toFixed(0)}`);
+      return;
+    }
+    
+    // Dynamic stop loss - tighter in greed, looser in fear
+    const adjustedSL = strat.stopLoss * (fg >= 60 ? 0.8 : fg <= 40 ? 1.3 : 1);
+    if(pnlPct <= adjustedSL) {
+      sell(pos, `🛑 STOP ${pnlPct.toFixed(1)}%`);
+      return;
+    }
+    
+    // Trailing stop: if was up 2%+ and now dropping
+    if(pnlPct < 0.5 && holdSec > 60) {
+      const hist = state.priceHistory[pos.id] || [];
+      if(hist.length >= 5) {
+        const recent = hist.slice(-5);
+        const wasHigher = Math.max(...recent) > pos.entry * 1.02;
+        if(wasHigher && pnlPct < 0.3) {
+          sell(pos, '📉 TRAIL STOP');
+          return;
+        }
+      }
+    }
+    
+    // Timeout rules
+    const timeoutSec = state.strategy === 'scalper' ? 90 : state.strategy === 'yolo' ? 300 : 180;
+    if(holdSec > timeoutSec && pnlPct >= strat.takeProfit * 0.25) {
+      sell(pos, '⏱️ TIMEOUT WIN');
+      return;
+    }
+    if(holdSec > timeoutSec * 2.5 && Math.abs(pnlPct) < 0.3) {
+      sell(pos, '⏱️ TIMEOUT FLAT');
+      return;
+    }
+  });
+  
+  // ============ FIND NEW OPPORTUNITIES ============
+  if(state.wallet < CONFIG.MIN_POS || state.positions.length >= strat.maxPositions) {
+    render();
+    return;
+  }
+  
+  const posIds = new Set(state.positions.map(p => p.id));
+  
+  // SMART OPPORTUNITY SCORING
+  const opportunities = state.cryptos
+    .filter(c => !posIds.has(c.id) && c.vol > 30000000)
+    .map(c => {
+      const analysis = analyzeAsset(c.id);
+      let score = analysis.buyScore + buyBias;
+      
+      // MOMENTUM BONUS: If in top gainers with volume
+      if(state.topGainers.find(g => g.id === c.id)) {
+        score += 20;
+      }
+      
+      // BOUNCE PLAY: If oversold AND in losers (potential reversal)
+      if(state.topLosers.find(l => l.id === c.id) && analysis.rsi < 35) {
+        score += 25; // Contrarian bounce play
+      }
+      
+      // VOLUME SPIKE: Something is happening
+      if(state.volumeSpikes.find(v => v.id === c.id) && c.h1 > 0) {
+        score += 15;
+      }
+      
+      // MOMENTUM LEADER: Strong sustained trend
+      if(state.momentumLeaders.find(m => m.id === c.id)) {
+        score += 30;
+      }
+      
+      // RSI BONUS: Lower RSI = better buy
+      if(analysis.rsi < 30) score += 25;
+      else if(analysis.rsi < 35) score += 15;
+      else if(analysis.rsi < 40) score += 5;
+      
+      // FEAR BONUS: Buy more aggressively in fear
+      if(fg <= 30 && analysis.rsi < 40) score += 20;
+      
+      // Penalize if RSI too high (overbought)
+      if(analysis.rsi > 60) score -= 30;
+      if(analysis.rsi > 70) score -= 50;
+      
+      return { ...c, ...analysis, finalScore: score };
+    })
+    .filter(c => {
+      // Minimum score threshold
+      const minScore = strat.minScore - buyBias;
+      return c.finalScore >= minScore && c.rsi < strat.rsiOversold + buyBias/3;
+    })
+    .sort((a, b) => b.finalScore - a.finalScore);
+  
+  // Adjust trade frequency based on market
+  const adjustedFreq = Math.ceil(strat.tradeFreq * marketMultiplier);
+  const tradesToOpen = Math.min(opportunities.length, adjustedFreq);
+  
+  for(let i = 0; i < tradesToOpen; i++) {
+    if(state.wallet < CONFIG.MIN_POS || state.positions.length >= strat.maxPositions) break;
+    
+    const opp = opportunities[i];
+    
+    // Position sizing - bigger in fear, smaller in greed
+    let posSize = state.wallet * strat.positionSize * marketMultiplier;
+    posSize = Math.min(posSize, state.strategy === 'yolo' ? 50 : 25, state.wallet * 0.4);
+    posSize = Math.max(posSize, CONFIG.MIN_POS);
+    
+    if(posSize >= CONFIG.MIN_POS) {
+      log(`📊 RSI=${opp.rsi.toFixed(0)} Score=${opp.score} → BUY ${opp.sym}`, 'info');
+      buy(opp, posSize);
+    }
+  }
+  
+  render();
+};
+
+// Fetch Fear & Greed Index - Calculate from market data (no external API needed)
+const fetchSentiment = async () => {
+  // Try external API first (may fail due to CORS)
+  try {
+    const res = await fetch('https://api.alternative.me/fng/?limit=1');
+    if(res.ok) {
+      const data = await res.json();
+      if(data.data && data.data[0]) {
+        state.fearGreed = parseInt(data.data[0].value);
+        state.fearGreedClass = data.data[0].value_classification;
+        log(`🎭 Fear/Greed: ${state.fearGreed} (${state.fearGreedClass})`, 'info');
+        return;
+      }
+    }
+  } catch(e) {
+    // API failed - calculate our own sentiment
+  }
+  
+  // CALCULATE OUR OWN FEAR/GREED from market data
+  if(state.cryptos.length === 0) return;
+  
+  // Factors:
+  // 1. % of coins up vs down (momentum)
+  const gainers = state.cryptos.filter(c => c.h1 > 0).length;
+  const total = state.cryptos.length;
+  const momentumScore = (gainers / total) * 100; // 0-100
+  
+  // 2. Average 1h change (volatility direction)
+  const avgH1 = state.cryptos.reduce((s, c) => s + c.h1, 0) / total;
+  const volatilityScore = Math.min(100, Math.max(0, 50 + avgH1 * 10));
+  
+  // 3. Volume activity (high volume = more interest)
+  const avgVol = state.cryptos.reduce((s, c) => s + c.vol, 0) / total;
+  const volScore = avgVol > 1e9 ? 70 : avgVol > 500e6 ? 55 : avgVol > 100e6 ? 45 : 30;
+  
+  // 4. Big movers count (extreme moves = extreme sentiment)
+  const bigUp = state.cryptos.filter(c => c.h1 > 3).length;
+  const bigDown = state.cryptos.filter(c => c.h1 < -3).length;
+  const extremeScore = bigUp > bigDown ? 60 + bigUp * 2 : 40 - bigDown * 2;
+  
+  // Weighted average
+  const calculated = Math.round(
+    momentumScore * 0.35 + 
+    volatilityScore * 0.25 + 
+    volScore * 0.20 + 
+    extremeScore * 0.20
+  );
+  
+  state.fearGreed = Math.min(100, Math.max(0, calculated));
+  
+  // Classify
+  if(state.fearGreed <= 25) state.fearGreedClass = 'Extreme Fear';
+  else if(state.fearGreed <= 40) state.fearGreedClass = 'Fear';
+  else if(state.fearGreed <= 60) state.fearGreedClass = 'Neutral';
+  else if(state.fearGreed <= 75) state.fearGreedClass = 'Greed';
+  else state.fearGreedClass = 'Extreme Greed';
+  
+  log(`🎭 Sentiment: ${state.fearGreed} (${state.fearGreedClass}) [calculated]`, 'info');
+};
+
+// Analyze market trends from price data
+const analyzeMarketTrends = () => {
+  if(state.cryptos.length === 0) return;
+  
+  // Calculate market-wide metrics
+  const gainers = state.cryptos.filter(c => c.h1 > 0).length;
+  const losers = state.cryptos.filter(c => c.h1 < 0).length;
+  const avgH1 = state.cryptos.reduce((s, c) => s + c.h1, 0) / state.cryptos.length;
+  
+  // Determine market trend
+  if(gainers > losers * 1.5 && avgH1 > 0.5) {
+    state.marketTrend = 'bullish';
+  } else if(losers > gainers * 1.5 && avgH1 < -0.5) {
+    state.marketTrend = 'bearish';
+  } else {
+    state.marketTrend = 'neutral';
+  }
+  
+  // Find top gainers (momentum plays)
+  state.topGainers = [...state.cryptos]
+    .filter(c => c.vol > 10000000)
+    .sort((a, b) => b.h1 - a.h1)
+    .slice(0, 10);
+  
+  // Find top losers (potential bounce plays)
+  state.topLosers = [...state.cryptos]
+    .filter(c => c.vol > 10000000)
+    .sort((a, b) => a.h1 - b.h1)
+    .slice(0, 10);
+  
+  // Find volume spikes (something happening)
+  state.volumeSpikes = [...state.cryptos]
+    .filter(c => c.vol > 100000000)
+    .sort((a, b) => b.vol - a.vol)
+    .slice(0, 10);
+  
+  // Find momentum leaders (sustained movement)
+  state.momentumLeaders = [...state.cryptos]
+    .filter(c => c.h1 > 1 && c.h24 > 3 && c.vol > 50000000)
+    .sort((a, b) => (b.h1 + b.h24) - (a.h1 + a.h24))
+    .slice(0, 10);
+};
+
+// Fetch live data - 500 cryptos (maximum available)
+const fetchData = async () => {
+  try {
+    let allData = [];
+    
+    // Fetch up to 5 pages (500 cryptos total)
+    for(let page = 1; page <= 5; page++) {
+      try {
+        const res = await fetch(
+          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=${page}&sparkline=false&price_change_percentage=1h,24h`
+        );
+        if(res.ok) {
+          const data = await res.json();
+          if(data.length > 0) {
+            allData = [...allData, ...data];
+          } else {
+            break; // No more data
+          }
+        }
+        // Small delay to avoid rate limiting
+        if(page < 5) await new Promise(r => setTimeout(r, 200));
+      } catch(e) {
+        break; // Stop on error
+      }
+    }
+    
+    if(allData.length === 0) throw new Error('No data');
+    
+    state.cryptos = allData.map(c => {
+      // Track history
+      if(!state.priceHistory[c.id]) state.priceHistory[c.id] = [];
+      state.priceHistory[c.id].push(c.current_price);
+      if(state.priceHistory[c.id].length > 30) state.priceHistory[c.id].shift();
+      
+      return {
+        id: c.id,
+        sym: c.symbol.toUpperCase(),
+        name: c.name,
+        price: c.current_price,
+        h1: c.price_change_percentage_1h_in_currency || 0,
+        h24: c.price_change_percentage_24h || 0,
+        vol: c.total_volume,
+        img: c.image,
+        marketCap: c.market_cap,
+        rank: c.market_cap_rank
+      };
+    });
+    
+    state.lastUpdate = new Date();
+    
+    // Analyze market trends
+    analyzeMarketTrends();
+    
+    if(state.logs.length === 0) {
+      log('✅ Connected to CoinGecko - ' + state.cryptos.length + ' cryptos', 'success');
+      log('🚀 AUTO TRADING STARTED!', 'success');
+      // Fetch sentiment on first load
+      fetchSentiment();
+    }
+    
+    render();
+  } catch(e) {
+    // Don't show "Failed to fetch" - just use backup
+    if(e.message !== 'Failed to fetch') {
+      log('⚠️ ' + e.message, 'warn');
+    }
+    
+    // Backup data
+    if(state.cryptos.length === 0) {
+      state.cryptos = [
+        {id:'bitcoin',sym:'BTC',price:97000+Math.random()*1000,h1:0.5+Math.random(),h24:2,vol:30e9,img:'https://assets.coingecko.com/coins/images/1/small/bitcoin.png'},
+        {id:'ethereum',sym:'ETH',price:3400+Math.random()*100,h1:0.3+Math.random()*0.5,h24:1.5,vol:18e9,img:'https://assets.coingecko.com/coins/images/279/small/ethereum.png'},
+        {id:'solana',sym:'SOL',price:190+Math.random()*10,h1:1+Math.random(),h24:5,vol:4e9,img:'https://assets.coingecko.com/coins/images/4128/small/solana.png'},
+        {id:'ripple',sym:'XRP',price:2.3+Math.random()*0.2,h1:0.5+Math.random()*0.5,h24:3,vol:9e9,img:'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png'},
+        {id:'dogecoin',sym:'DOGE',price:0.32+Math.random()*0.03,h1:0.3+Math.random()*0.4,h24:2,vol:3e9,img:'https://assets.coingecko.com/coins/images/5/small/dogecoin.png'},
+        {id:'cardano',sym:'ADA',price:0.95+Math.random()*0.05,h1:0.8+Math.random(),h24:2.5,vol:2e9,img:'https://assets.coingecko.com/coins/images/975/small/cardano.png'},
+        {id:'avalanche-2',sym:'AVAX',price:38+Math.random()*2,h1:1.2+Math.random(),h24:4,vol:1.5e9,img:'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png'},
+        {id:'polkadot',sym:'DOT',price:7.5+Math.random()*0.3,h1:0.6+Math.random()*0.5,h24:3,vol:800e6,img:'https://assets.coingecko.com/coins/images/12171/small/polkadot.png'},
+        {id:'chainlink',sym:'LINK',price:18+Math.random(),h1:1+Math.random(),h24:5,vol:1.2e9,img:'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png'},
+        {id:'shiba-inu',sym:'SHIB',price:0.000024+Math.random()*0.000002,h1:0.5+Math.random()*2,h24:4,vol:600e6,img:'https://assets.coingecko.com/coins/images/11939/small/shiba.png'},
+      ];
+      state.cryptos.forEach(c => { state.priceHistory[c.id] = [c.price]; });
+      log('📦 Using simulated data (API unavailable)', 'warn');
+      analyzeMarketTrends();
+      fetchSentiment();
+    } else {
+      // Update existing with small random changes for simulation
+      state.cryptos = state.cryptos.map(c => ({
+        ...c,
+        price: c.price * (1 + (Math.random() - 0.5) * 0.002),
+        h1: c.h1 + (Math.random() - 0.5) * 0.3
+      }));
+      state.cryptos.forEach(c => {
+        state.priceHistory[c.id].push(c.price);
+        if(state.priceHistory[c.id].length > 30) state.priceHistory[c.id].shift();
+      });
+      analyzeMarketTrends();
+    }
+    render();
+  }
+  
+  // Also fetch stocks
+  fetchStocks();
+};
+
+// Fetch stock data - using Yahoo Finance API (no auth needed)
+const fetchStocks = async () => {
+  // Popular stocks to track
+  const symbols = [
+    'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK-B', 'JPM', 'V',
+    'UNH', 'XOM', 'JNJ', 'WMT', 'MA', 'PG', 'CVX', 'HD', 'MRK', 'ABBV',
+    'KO', 'PEP', 'COST', 'LLY', 'AVGO', 'MCD', 'TMO', 'CSCO', 'ACN', 'ABT',
+    'DHR', 'NEE', 'VZ', 'ADBE', 'NKE', 'TXN', 'PM', 'INTC', 'CRM', 'AMD',
+    'NFLX', 'QCOM', 'T', 'HON', 'IBM', 'AMGN', 'UPS', 'LOW', 'CAT', 'BA',
+    'GS', 'SBUX', 'DE', 'PLD', 'SPGI', 'GILD', 'BLK', 'MDLZ', 'SYK', 'ADP',
+    'PYPL', 'SNAP', 'UBER', 'LYFT', 'SQ', 'SHOP', 'ROKU', 'ZM', 'COIN', 'HOOD'
+  ];
+  
+  try {
+    // Use a free proxy API for Yahoo Finance data
+    const tickerList = symbols.join(',');
+    const res = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickerList}`);
+    
+    if(res.ok) {
+      const data = await res.json();
+      if(data.quoteResponse && data.quoteResponse.result) {
+        state.stocks = data.quoteResponse.result.map(s => {
+          const id = 'stock_' + s.symbol;
+          
+          // Track price history
+          if(!state.priceHistory[id]) state.priceHistory[id] = [];
+          state.priceHistory[id].push(s.regularMarketPrice);
+          if(state.priceHistory[id].length > 30) state.priceHistory[id].shift();
+          
+          return {
+            id,
+            sym: s.symbol,
+            name: s.shortName || s.longName || s.symbol,
+            price: s.regularMarketPrice || 0,
+            h1: s.regularMarketChangePercent || 0, // Yahoo doesn't have 1h, use day change
+            h24: s.regularMarketChangePercent || 0,
+            vol: s.regularMarketVolume || 0,
+            open: s.regularMarketOpen || 0,
+            high: s.regularMarketDayHigh || 0,
+            low: s.regularMarketDayLow || 0,
+            prevClose: s.regularMarketPreviousClose || 0,
+            marketCap: s.marketCap || 0,
+            type: 'stock',
+            img: null
+          };
+        });
+        
+        if(state.stocks.length > 0 && !state.stocksLogged) {
+          log('📈 Loaded ' + state.stocks.length + ' stocks from Yahoo Finance', 'success');
+          state.stocksLogged = true;
+        }
+      }
+    } else {
+      throw new Error('Yahoo API unavailable');
+    }
+  } catch(e) {
+    // Fallback: Use simulated real-time data based on market hours
+    if(state.stocks.length === 0) {
+      const baseStocks = [
+        // MEGA CAP
+        {sym:'AAPL',name:'Apple Inc.',base:178,sector:'Tech'},
+        {sym:'MSFT',name:'Microsoft',base:378,sector:'Tech'},
+        {sym:'GOOGL',name:'Alphabet',base:141,sector:'Tech'},
+        {sym:'AMZN',name:'Amazon',base:186,sector:'Consumer'},
+        {sym:'NVDA',name:'NVIDIA',base:495,sector:'Tech'},
+        {sym:'META',name:'Meta Platforms',base:505,sector:'Tech'},
+        {sym:'TSLA',name:'Tesla',base:248,sector:'Auto'},
+        {sym:'BRK-B',name:'Berkshire Hathaway',base:363,sector:'Finance'},
+        // LARGE CAP TECH
+        {sym:'AVGO',name:'Broadcom',base:1125,sector:'Tech'},
+        {sym:'ORCL',name:'Oracle',base:125,sector:'Tech'},
+        {sym:'CRM',name:'Salesforce',base:272,sector:'Tech'},
+        {sym:'ADBE',name:'Adobe',base:520,sector:'Tech'},
+        {sym:'AMD',name:'AMD',base:148,sector:'Tech'},
+        {sym:'INTC',name:'Intel',base:45,sector:'Tech'},
+        {sym:'QCOM',name:'Qualcomm',base:168,sector:'Tech'},
+        {sym:'TXN',name:'Texas Instruments',base:175,sector:'Tech'},
+        {sym:'IBM',name:'IBM',base:168,sector:'Tech'},
+        {sym:'NOW',name:'ServiceNow',base:705,sector:'Tech'},
+        {sym:'CSCO',name:'Cisco',base:50,sector:'Tech'},
+        {sym:'NFLX',name:'Netflix',base:478,sector:'Tech'},
+        // FINANCE
+        {sym:'JPM',name:'JPMorgan Chase',base:195,sector:'Finance'},
+        {sym:'V',name:'Visa',base:276,sector:'Finance'},
+        {sym:'MA',name:'Mastercard',base:448,sector:'Finance'},
+        {sym:'BAC',name:'Bank of America',base:35,sector:'Finance'},
+        {sym:'WFC',name:'Wells Fargo',base:52,sector:'Finance'},
+        {sym:'GS',name:'Goldman Sachs',base:385,sector:'Finance'},
+        {sym:'MS',name:'Morgan Stanley',base:95,sector:'Finance'},
+        {sym:'C',name:'Citigroup',base:58,sector:'Finance'},
+        {sym:'AXP',name:'American Express',base:215,sector:'Finance'},
+        {sym:'BLK',name:'BlackRock',base:825,sector:'Finance'},
+        {sym:'SCHW',name:'Charles Schwab',base:72,sector:'Finance'},
+        {sym:'PYPL',name:'PayPal',base:62,sector:'Finance'},
+        {sym:'SQ',name:'Block Inc',base:68,sector:'Finance'},
+        {sym:'COIN',name:'Coinbase',base:185,sector:'Finance'},
+        {sym:'HOOD',name:'Robinhood',base:17,sector:'Finance'},
+        // HEALTHCARE
+        {sym:'UNH',name:'UnitedHealth',base:527,sector:'Health'},
+        {sym:'JNJ',name:'Johnson & Johnson',base:156,sector:'Health'},
+        {sym:'LLY',name:'Eli Lilly',base:582,sector:'Health'},
+        {sym:'PFE',name:'Pfizer',base:28,sector:'Health'},
+        {sym:'MRK',name:'Merck',base:109,sector:'Health'},
+        {sym:'ABBV',name:'AbbVie',base:155,sector:'Health'},
+        {sym:'TMO',name:'Thermo Fisher',base:530,sector:'Health'},
+        {sym:'ABT',name:'Abbott Labs',base:103,sector:'Health'},
+        {sym:'DHR',name:'Danaher',base:255,sector:'Health'},
+        {sym:'BMY',name:'Bristol-Myers',base:52,sector:'Health'},
+        {sym:'AMGN',name:'Amgen',base:285,sector:'Health'},
+        {sym:'GILD',name:'Gilead',base:72,sector:'Health'},
+        {sym:'MRNA',name:'Moderna',base:95,sector:'Health'},
+        // CONSUMER
+        {sym:'WMT',name:'Walmart',base:163,sector:'Consumer'},
+        {sym:'PG',name:'Procter & Gamble',base:152,sector:'Consumer'},
+        {sym:'KO',name:'Coca-Cola',base:59,sector:'Consumer'},
+        {sym:'PEP',name:'PepsiCo',base:168,sector:'Consumer'},
+        {sym:'COST',name:'Costco',base:702,sector:'Consumer'},
+        {sym:'HD',name:'Home Depot',base:348,sector:'Consumer'},
+        {sym:'MCD',name:'McDonalds',base:281,sector:'Consumer'},
+        {sym:'NKE',name:'Nike',base:78,sector:'Consumer'},
+        {sym:'SBUX',name:'Starbucks',base:92,sector:'Consumer'},
+        {sym:'DIS',name:'Disney',base:91,sector:'Consumer'},
+        {sym:'TGT',name:'Target',base:145,sector:'Consumer'},
+        {sym:'LOW',name:'Lowes',base:225,sector:'Consumer'},
+        {sym:'TJX',name:'TJX Companies',base:95,sector:'Consumer'},
+        {sym:'BKNG',name:'Booking Holdings',base:3650,sector:'Consumer'},
+        {sym:'MAR',name:'Marriott',base:225,sector:'Consumer'},
+        {sym:'CMG',name:'Chipotle',base:2850,sector:'Consumer'},
+        {sym:'YUM',name:'Yum! Brands',base:135,sector:'Consumer'},
+        {sym:'EL',name:'Estee Lauder',base:145,sector:'Consumer'},
+        // ENERGY
+        {sym:'XOM',name:'Exxon Mobil',base:105,sector:'Energy'},
+        {sym:'CVX',name:'Chevron',base:149,sector:'Energy'},
+        {sym:'COP',name:'ConocoPhillips',base:115,sector:'Energy'},
+        {sym:'SLB',name:'Schlumberger',base:52,sector:'Energy'},
+        {sym:'EOG',name:'EOG Resources',base:125,sector:'Energy'},
+        {sym:'OXY',name:'Occidental',base:62,sector:'Energy'},
+        {sym:'PSX',name:'Phillips 66',base:135,sector:'Energy'},
+        {sym:'VLO',name:'Valero',base:145,sector:'Energy'},
+        // INDUSTRIAL
+        {sym:'BA',name:'Boeing',base:178,sector:'Industrial'},
+        {sym:'CAT',name:'Caterpillar',base:295,sector:'Industrial'},
+        {sym:'GE',name:'General Electric',base:125,sector:'Industrial'},
+        {sym:'HON',name:'Honeywell',base:205,sector:'Industrial'},
+        {sym:'UPS',name:'UPS',base:155,sector:'Industrial'},
+        {sym:'RTX',name:'RTX Corp',base:95,sector:'Industrial'},
+        {sym:'LMT',name:'Lockheed Martin',base:455,sector:'Industrial'},
+        {sym:'DE',name:'Deere & Co',base:385,sector:'Industrial'},
+        {sym:'MMM',name:'3M Company',base:105,sector:'Industrial'},
+        {sym:'FDX',name:'FedEx',base:275,sector:'Industrial'},
+        // TELECOM
+        {sym:'T',name:'AT&T',base:18,sector:'Telecom'},
+        {sym:'VZ',name:'Verizon',base:42,sector:'Telecom'},
+        {sym:'TMUS',name:'T-Mobile',base:165,sector:'Telecom'},
+        // REAL ESTATE
+        {sym:'PLD',name:'Prologis',base:125,sector:'RealEstate'},
+        {sym:'AMT',name:'American Tower',base:215,sector:'RealEstate'},
+        {sym:'EQIX',name:'Equinix',base:785,sector:'RealEstate'},
+        {sym:'SPG',name:'Simon Property',base:145,sector:'RealEstate'},
+        // GROWTH/TECH
+        {sym:'SHOP',name:'Shopify',base:78,sector:'Tech'},
+        {sym:'UBER',name:'Uber',base:62,sector:'Tech'},
+        {sym:'LYFT',name:'Lyft',base:12,sector:'Tech'},
+        {sym:'SNAP',name:'Snap Inc',base:11,sector:'Tech'},
+        {sym:'ZM',name:'Zoom',base:72,sector:'Tech'},
+        {sym:'ROKU',name:'Roku',base:58,sector:'Tech'},
+        {sym:'DDOG',name:'Datadog',base:125,sector:'Tech'},
+        {sym:'SNOW',name:'Snowflake',base:165,sector:'Tech'},
+        {sym:'NET',name:'Cloudflare',base:85,sector:'Tech'},
+        {sym:'CRWD',name:'CrowdStrike',base:285,sector:'Tech'},
+        {sym:'ZS',name:'Zscaler',base:195,sector:'Tech'},
+        {sym:'PANW',name:'Palo Alto',base:315,sector:'Tech'},
+        {sym:'MDB',name:'MongoDB',base:285,sector:'Tech'},
+        {sym:'PLTR',name:'Palantir',base:22,sector:'Tech'},
+        {sym:'U',name:'Unity Software',base:28,sector:'Tech'},
+        {sym:'RBLX',name:'Roblox',base:42,sector:'Tech'},
+        {sym:'PATH',name:'UiPath',base:15,sector:'Tech'},
+        {sym:'DOCN',name:'DigitalOcean',base:35,sector:'Tech'},
+        {sym:'ESTC',name:'Elastic',base:95,sector:'Tech'},
+        // BIOTECH
+        {sym:'REGN',name:'Regeneron',base:885,sector:'Health'},
+        {sym:'VRTX',name:'Vertex',base:425,sector:'Health'},
+        {sym:'BIIB',name:'Biogen',base:265,sector:'Health'},
+        {sym:'ILMN',name:'Illumina',base:135,sector:'Health'},
+        // AUTO
+        {sym:'F',name:'Ford',base:12,sector:'Auto'},
+        {sym:'GM',name:'General Motors',base:38,sector:'Auto'},
+        {sym:'RIVN',name:'Rivian',base:15,sector:'Auto'},
+        {sym:'LCID',name:'Lucid',base:4,sector:'Auto'},
+        // MATERIALS
+        {sym:'LIN',name:'Linde',base:425,sector:'Materials'},
+        {sym:'APD',name:'Air Products',base:285,sector:'Materials'},
+        {sym:'SHW',name:'Sherwin-Williams',base:325,sector:'Materials'},
+        {sym:'FCX',name:'Freeport-McMoRan',base:42,sector:'Materials'},
+        {sym:'NEM',name:'Newmont',base:42,sector:'Materials'},
+        // UTILITIES
+        {sym:'NEE',name:'NextEra Energy',base:72,sector:'Utilities'},
+        {sym:'DUK',name:'Duke Energy',base:98,sector:'Utilities'},
+        {sym:'SO',name:'Southern Company',base:72,sector:'Utilities'},
+        // MORE CONSUMER
+        {sym:'ABNB',name:'Airbnb',base:135,sector:'Consumer'},
+        {sym:'DASH',name:'DoorDash',base:125,sector:'Consumer'},
+        {sym:'ETSY',name:'Etsy',base:72,sector:'Consumer'},
+        {sym:'CHWY',name:'Chewy',base:28,sector:'Consumer'},
+        {sym:'W',name:'Wayfair',base:52,sector:'Consumer'},
+        {sym:'PTON',name:'Peloton',base:5,sector:'Consumer'},
+        // SEMICONDUCTORS
+        {sym:'MU',name:'Micron',base:85,sector:'Tech'},
+        {sym:'LRCX',name:'Lam Research',base:725,sector:'Tech'},
+        {sym:'AMAT',name:'Applied Materials',base:165,sector:'Tech'},
+        {sym:'KLAC',name:'KLA Corp',base:625,sector:'Tech'},
+        {sym:'MRVL',name:'Marvell Tech',base:62,sector:'Tech'},
+        {sym:'ON',name:'ON Semiconductor',base:72,sector:'Tech'},
+        {sym:'ADI',name:'Analog Devices',base:215,sector:'Tech'},
+        // ETFs for reference
+        {sym:'SPY',name:'S&P 500 ETF',base:485,sector:'ETF'},
+        {sym:'QQQ',name:'Nasdaq 100 ETF',base:425,sector:'ETF'},
+        {sym:'DIA',name:'Dow Jones ETF',base:385,sector:'ETF'},
+        {sym:'IWM',name:'Russell 2000 ETF',base:205,sector:'ETF'},
+        {sym:'ARKK',name:'ARK Innovation',base:48,sector:'ETF'},
+        {sym:'XLF',name:'Financial Sector',base:42,sector:'ETF'},
+        {sym:'XLE',name:'Energy Sector',base:88,sector:'ETF'},
+        {sym:'XLK',name:'Technology Sector',base:195,sector:'ETF'}
+      ];
+      
+      state.stocks = baseStocks.map(s => {
+        const id = 'stock_' + s.sym;
+        const variance = (Math.random() - 0.5) * 0.04; // ±2% variance
+        const price = s.base * (1 + variance);
+        const dayChange = (Math.random() - 0.5) * 4; // ±2% day change
+        
+        if(!state.priceHistory[id]) state.priceHistory[id] = [];
+        state.priceHistory[id].push(price);
+        
+        return {
+          id,
+          sym: s.sym,
+          name: s.name,
+          price,
+          h1: dayChange * 0.3, // Approximate 1h as fraction of day
+          h24: dayChange,
+          vol: Math.floor(Math.random() * 50000000) + 1000000,
+          type: 'stock',
+          sector: s.sector,
+          img: null
+        };
+      });
+      
+      log('📈 Loaded ' + state.stocks.length + ' stocks (simulated)', 'info');
+    } else {
+      // Update existing stock prices with small random changes
+      state.stocks = state.stocks.map(s => {
+        const change = (Math.random() - 0.5) * 0.002; // ±0.1% tick
+        const newPrice = s.price * (1 + change);
+        
+        state.priceHistory[s.id].push(newPrice);
+        if(state.priceHistory[s.id].length > 30) state.priceHistory[s.id].shift();
+        
+        return {
+          ...s,
+          price: newPrice,
+          h1: s.h1 + (Math.random() - 0.5) * 0.1
+        };
+      });
+    }
+  }
+};
+
+// Sell ALL positions
+const sellAllPositions = () => {
+  if(state.positions.length === 0) return;
+  log('🛑 SELLING ALL POSITIONS...', 'warn');
+  [...state.positions].forEach(pos => sell(pos, 'SELL ALL'));
+  state.running = false;
+  log('✅ All positions closed', 'success');
+  render();
+};
+
+// Settings Modal HTML
+const renderSettings = () => `
+  <div class="modal-overlay" onclick="if(event.target===this){state.showSettings=false;render()}">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>⚙️ Settings</h2>
+        <button class="btn" onclick="state.showSettings=false;render()" style="padding:5px 10px">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Trading Mode -->
+        <div class="form-section" style="background:${state.mode==='live'?'#7f1d1d':'#14532d'}">
+          <h3>${state.mode==='live'?'🔴':'📝'} Trading Mode</h3>
+          <div style="display:flex;gap:10px">
+            <button class="btn ${state.mode==='paper'?'btn-start':'btn-settings'}" style="flex:1" onclick="state.mode='paper';log('📝 Paper mode','info');render()">📝 PAPER</button>
+            <button class="btn ${state.mode==='live'?'btn-stop':'btn-settings'}" style="flex:1" onclick="if(confirm('⚠️ LIVE MODE uses REAL MONEY!\\n\\nAre you sure?')){state.mode='live';log('🔴 LIVE MODE!','warn');render()}">💰 LIVE</button>
+          </div>
+        </div>
+        
+        <!-- Coinbase -->
+        <div class="form-section">
+          <h3>🟠 Coinbase (Crypto) ${state.coinbaseConnected?'<span class=\"connected-badge\">✓ Connected</span>':''}</h3>
+          <div class="form-group">
+            <label>API Key</label>
+            <input type="text" value="${state.coinbaseKey}" onchange="state.coinbaseKey=this.value" placeholder="Enter Coinbase API Key">
+          </div>
+          <div class="form-group">
+            <label>API Secret</label>
+            <input type="password" value="${state.coinbaseSecret}" onchange="state.coinbaseSecret=this.value" placeholder="Enter Coinbase Secret">
+          </div>
+          <button class="btn btn-connect" onclick="testCoinbase()">Test Connection</button>
+          <p style="font-size:10px;color:#666;margin-top:8px">Get keys: <a href="https://www.coinbase.com/settings/api" target="_blank" style="color:#f97316">coinbase.com/settings/api</a></p>
+        </div>
+        
+        <!-- Alpaca -->
+        <div class="form-section">
+          <h3>📈 Alpaca (Stocks) ${state.alpacaConnected?'<span class=\"connected-badge\">✓ Connected</span>':''}</h3>
+          <div class="form-group">
+            <label>API Key</label>
+            <input type="text" value="${state.alpacaKey}" onchange="state.alpacaKey=this.value" placeholder="Enter Alpaca API Key">
+          </div>
+          <div class="form-group">
+            <label>Secret Key</label>
+            <input type="password" value="${state.alpacaSecret}" onchange="state.alpacaSecret=this.value" placeholder="Enter Alpaca Secret">
+          </div>
+          <div class="toggle-row">
+            <span>Paper Trading</span>
+            <div class="toggle ${state.alpacaPaper?'on':''}" onclick="state.alpacaPaper=!state.alpacaPaper;render()"></div>
+          </div>
+          <button class="btn btn-connect" onclick="testAlpaca()">Test Connection</button>
+          <p style="font-size:10px;color:#666;margin-top:8px">Get keys: <a href="https://app.alpaca.markets" target="_blank" style="color:#3b82f6">alpaca.markets</a></p>
+        </div>
+        
+        <!-- Telegram -->
+        <div class="form-section">
+          <h3>📱 Telegram Alerts</h3>
+          <div class="form-group">
+            <label>Bot Token</label>
+            <input type="text" value="${state.telegramToken}" onchange="state.telegramToken=this.value" placeholder="Enter Bot Token">
+          </div>
+          <div class="form-group">
+            <label>Chat ID</label>
+            <input type="text" value="${state.telegramChatId}" onchange="state.telegramChatId=this.value" placeholder="Enter Chat ID">
+          </div>
+        </div>
+        
+        <button class="btn btn-start" style="width:100%" onclick="saveSettings()">💾 SAVE SETTINGS</button>
+      </div>
+    </div>
+  </div>
+`;
+
+// Asset Detail Modal HTML
+const renderAssetDetail = () => {
+  const asset = state.selectedAsset;
+  if(!asset) return '';
+  const history = state.priceHistory[asset.id] || [];
+  const mom = getMomentum(asset.id);
+  const isStock = asset.type === 'stock';
+  const feeInfo = isStock 
+    ? { fee: '~$0', pct: '~0.003%', label: 'Commission-free (SEC fees only)' }
+    : { fee: '0.7%', pct: '~1.4% round-trip', label: 'Coinbase taker + spread' };
+  
+  return `
+  <div class="asset-detail" onclick="if(event.target===this){state.selectedAsset=null;render()}">
+    <div class="asset-detail-content">
+      <button class="btn btn-stop" onclick="state.selectedAsset=null;render()" style="position:absolute;top:20px;right:20px">✕ Close</button>
+      
+      <div class="asset-header">
+        ${asset.img 
+          ? `<img src="${asset.img}" alt="${asset.sym}">`
+          : `<div style="width:60px;height:60px;background:#1a1a1a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:${isStock?'#3b82f6':'#f97316'}">${asset.sym.slice(0,2)}</div>`
+        }
+        <div>
+          <h2>${asset.sym} <span style="font-size:14px;color:${isStock?'#3b82f6':'#f97316'}">${isStock?'📈 STOCK':'🟠 CRYPTO'}</span></h2>
+          <p style="color:#888">${asset.name || asset.id}</p>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:32px;font-weight:900">${fmt(asset.price)}</div>
+          <div style="font-size:18px;color:${asset.h24>=0?'#22c55e':'#ef4444'}">${pct(asset.h24)} ${isStock?'(today)':'(24h)'}</div>
+        </div>
+      </div>
+      
+      <div class="asset-chart">
+        <h3 style="margin-bottom:10px">📈 Price History (Last ${history.length} ticks)</h3>
+        <div style="height:150px;display:flex;align-items:end;gap:2px">
+          ${history.length > 1 ? history.map((p, i) => {
+            const min = Math.min(...history);
+            const max = Math.max(...history);
+            const range = max - min || 1;
+            const height = ((p - min) / range) * 100;
+            const color = i > 0 && p >= history[i-1] ? '#22c55e' : '#ef4444';
+            return `<div style="flex:1;height:${Math.max(5, height)}%;background:${color};border-radius:2px" title="${fmt(p)}"></div>`;
+          }).join('') : '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#555">Collecting price data...</div>'}
+        </div>
+      </div>
+      
+      <div class="asset-stats-grid">
+        <div class="asset-stat">
+          <div class="label">${isStock?'Day Change':'1h Change'}</div>
+          <div class="value" style="color:${asset.h1>=0?'#22c55e':'#ef4444'}">${pct(asset.h1)}</div>
+        </div>
+        <div class="asset-stat">
+          <div class="label">${isStock?'Change %':'24h Change'}</div>
+          <div class="value" style="color:${asset.h24>=0?'#22c55e':'#ef4444'}">${pct(asset.h24)}</div>
+        </div>
+        <div class="asset-stat">
+          <div class="label">Volume</div>
+          <div class="value">${asset.vol > 1e9 ? (asset.vol/1e9).toFixed(1)+'B' : asset.vol > 1e6 ? (asset.vol/1e6).toFixed(1)+'M' : fmt(asset.vol)}</div>
+        </div>
+        <div class="asset-stat">
+          <div class="label">Momentum</div>
+          <div class="value">${mom.trend} ${pct(mom.short)}</div>
+        </div>
+      </div>
+      
+      <!-- Fee Info -->
+      <div style="margin-top:15px;padding:12px;background:#111;border-radius:8px;border:1px solid #222">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#888;font-size:12px">💵 Trading Fee:</span>
+          <span style="color:#eab308;font-weight:700">${feeInfo.fee}</span>
+        </div>
+        <p style="font-size:10px;color:#555;margin-top:4px">${feeInfo.label}</p>
+      </div>
+      
+      <!-- Paper Value Preview -->
+      <div style="margin-top:15px;padding:12px;background:#0a2a0a;border-radius:8px;border:1px solid #22c55e33">
+        <div style="font-size:11px;color:#22c55e;margin-bottom:8px">📝 Paper Trade Preview</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
+          <div>
+            <div style="font-size:16px;font-weight:700">${fmt(Math.min(state.wallet * 0.1, 20))}</div>
+            <div style="font-size:9px;color:#666">Buy Amount</div>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:#eab308">${fmt(Math.min(state.wallet * 0.1, 20) * (isStock ? 0.00003 : CONFIG.FEE))}</div>
+            <div style="font-size:9px;color:#666">Est. Fee</div>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:700">${((Math.min(state.wallet * 0.1, 20) * (1 - (isStock ? 0.00003 : CONFIG.FEE))) / asset.price).toFixed(isStock?2:6)}</div>
+            <div style="font-size:9px;color:#666">${isStock?'Shares':'Coins'}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-top:20px;display:flex;gap:10px">
+        <button class="btn btn-start" style="flex:1" onclick="buyAsset('${asset.id}', ${isStock});render()">
+          📥 BUY ${asset.sym}
+        </button>
+      </div>
+    </div>
+  </div>
+`;
+};
+
+// Save settings to localStorage
+const saveSettings = () => {
+  try {
+    localStorage.setItem('nexus_settings', JSON.stringify({
+      mode: state.mode,
+      coinbaseKey: state.coinbaseKey,
+      coinbaseSecret: state.coinbaseSecret,
+      alpacaKey: state.alpacaKey,
+      alpacaSecret: state.alpacaSecret,
+      alpacaPaper: state.alpacaPaper,
+      telegramToken: state.telegramToken,
+      telegramChatId: state.telegramChatId
+    }));
+    log('💾 Settings saved!', 'success');
+    alert('✅ Settings saved!' + (state.mode === 'live' ? '\n⚠️ LIVE TRADING MODE!' : '\n📝 Paper mode'));
+  } catch(e) {
+    log('Failed to save settings', 'warn');
+  }
+};
+
+// Load settings from localStorage
+const loadSettings = () => {
+  try {
+    const saved = localStorage.getItem('nexus_settings');
+    if(saved) {
+      const s = JSON.parse(saved);
+      state.mode = s.mode || 'paper';
+      state.coinbaseKey = s.coinbaseKey || '';
+      state.coinbaseSecret = s.coinbaseSecret || '';
+      state.alpacaKey = s.alpacaKey || '';
+      state.alpacaSecret = s.alpacaSecret || '';
+      state.alpacaPaper = s.alpacaPaper !== false;
+      state.telegramToken = s.telegramToken || '';
+      state.telegramChatId = s.telegramChatId || '';
+    }
+  } catch(e) {}
+};
+
+// Test Coinbase connection
+const testCoinbase = async () => {
+  if(!state.coinbaseKey || !state.coinbaseSecret) {
+    alert('Enter Coinbase API credentials first');
+    return;
+  }
+  log('🔄 Testing Coinbase...', 'info');
+  // Note: Real implementation would need server-side for HMAC signing
+  alert('⚠️ Coinbase connection requires server-side implementation for security.\n\nAPI keys saved for future use.');
+  state.coinbaseConnected = false;
+  render();
+};
+
+// Test Alpaca connection
+const testAlpaca = async () => {
+  if(!state.alpacaKey || !state.alpacaSecret) {
+    alert('Enter Alpaca API credentials first');
+    return;
+  }
+  log('🔄 Testing Alpaca...', 'info');
+  try {
+    const url = state.alpacaPaper ? 'https://paper-api.alpaca.markets' : 'https://api.alpaca.markets';
+    const res = await fetch(`${url}/v2/account`, {
+      headers: {
+        'APCA-API-KEY-ID': state.alpacaKey,
+        'APCA-API-SECRET-KEY': state.alpacaSecret
+      }
+    });
+    if(res.ok) {
+      const acc = await res.json();
+      state.alpacaConnected = true;
+      log(`✅ Alpaca connected! $${parseFloat(acc.cash).toFixed(2)}`, 'success');
+      alert(`✅ Alpaca Connected!\n\nCash: $${parseFloat(acc.cash).toFixed(2)}\nBuying Power: $${parseFloat(acc.buying_power).toFixed(2)}`);
+    } else {
+      throw new Error('Failed');
+    }
+  } catch(e) {
+    state.alpacaConnected = false;
+    log('❌ Alpaca connection failed', 'warn');
+    alert('❌ Connection failed. Check your API keys.');
+  }
+  render();
+};
+
+// Render
+const render = () => {
+  const app = document.getElementById('app');
+  
+  if(state.cryptos.length === 0) {
+    app.innerHTML = `
+      <div class="loading">
+        <div style="font-size:50px">💰</div>
+        <h1>NEXUS AUTO TRADER</h1>
+        <div class="loading-bar"><div class="loading-fill"></div></div>
+        <p style="color:#666;margin-top:10px">Connecting to live markets...</p>
+      </div>
+    `;
+    return;
+  }
+  
+  const profit = getProfit();
+  const profitPct = getProfitPct();
+  const portfolio = getPortfolio();
+  const wins = getWins();
+  const losses = getLosses();
+  const winRate = getWinRate();
+  
+  // Sort positions
+  const sortedPos = [...state.positions].sort((a,b) => getPosValue(b).pnlPct - getPosValue(a).pnlPct);
+  
+  // Top movers
+  const movers = [...state.cryptos]
+    .map(c => ({...c, mom: getMomentum(c.id)}))
+    .sort((a,b) => b.mom.short - a.mom.short)
+    .slice(0, 12);
+  
+  app.innerHTML = `
+    ${state.showSettings ? renderSettings() : ''}
+    ${state.selectedAsset ? renderAssetDetail() : ''}
+    
+    <div class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <div style="font-size:32px">💰</div>
+          <div>
+            <h1>NEXUS AUTO TRADER <span class="badge" style="background:${state.mode === 'live' ? '#ef4444' : '#22c55e'}">${state.mode === 'live' ? '💰 LIVE' : '📝 PAPER'}</span></h1>
+            <p>${state.positions.length} positions • ${state.trades.length} trades • ${state.cryptos.length} cryptos • ${state.lastUpdate?.toLocaleTimeString() || '--'}</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-settings" onclick="state.showSettings=true;render()">⚙️ Settings</button>
+          ${state.running 
+            ? `<button class="btn btn-stop" onclick="state.running=false;log('⏸️ Paused','warn');render()">⏸️ PAUSE</button>`
+            : `<button class="btn btn-start" onclick="state.running=true;log('▶️ Resumed','success');render()">▶️ START</button>`
+          }
+          <button class="btn btn-stop" onclick="sellAllPositions()" ${state.positions.length===0?'disabled':''}>
+            🛑 SELL ALL (${state.positions.length})
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab ${state.tab==='dashboard'?'active':''}" onclick="state.tab='dashboard';render()">📊 Dashboard</div>
+      <div class="tab ${state.tab==='crypto'?'active':''}" onclick="state.tab='crypto';render()">🟠 Crypto (${state.cryptos.length})</div>
+      <div class="tab ${state.tab==='stocks'?'active':''}" onclick="state.tab='stocks';render()">📈 Stocks (${state.stocks.length})</div>
+      <div class="tab ${state.tab==='positions'?'active':''}" onclick="state.tab='positions';render()">💼 Positions (${state.positions.length})</div>
+      <div class="tab ${state.tab==='trades'?'active':''}" onclick="state.tab='trades';render()">📜 Trades (${state.trades.length})</div>
+    </div>
+    
+    <!-- STRATEGY SELECTOR -->
+    <div class="strategy-bar">
+      <div class="strategy-inner">
+        <span class="strategy-label">📊 Strategy:</span>
+        <div class="strategy-btns">
+          ${Object.entries(STRATEGIES).map(([key, s]) => `
+            <button class="strategy-btn ${key} ${state.strategy===key?'active':''}" onclick="setStrategy('${key}')" title="${s.desc}">
+              ${s.name}
+            </button>
+          `).join('')}
+        </div>
+        <span class="strategy-info">${STRATEGIES[state.strategy].desc}</span>
+      </div>
+    </div>
+    
+    <div class="stats">
+      <div class="stats-grid" style="grid-template-columns:2fr repeat(6,1fr)">
+        <div class="profit-box ${profit >= 0 ? 'up' : 'down'}">
+          <h2>💰 ${state.mode.toUpperCase()} PROFIT</h2>
+          <div class="amt">${profit >= 0 ? '+' : ''}${fmt(profit)}</div>
+          <div class="pct">${pct(profitPct)}</div>
+        </div>
+        <div class="stat" style="background:${state.fearGreed <= 25 ? 'rgba(239,68,68,0.2)' : state.fearGreed >= 75 ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.02)'}">
+          <h3>🎭 Fear/Greed</h3>
+          <div class="val" style="color:${state.fearGreed <= 30 ? '#ef4444' : state.fearGreed >= 70 ? '#22c55e' : '#eab308'}">${state.fearGreed}</div>
+          <div class="sub">${state.fearGreedClass}</div>
+        </div>
+        <div class="stat">
+          <h3>📊 Market</h3>
+          <div class="val" style="color:${state.marketTrend === 'bullish' ? '#22c55e' : state.marketTrend === 'bearish' ? '#ef4444' : '#888'}">${state.marketTrend === 'bullish' ? '📈' : state.marketTrend === 'bearish' ? '📉' : '➡️'}</div>
+          <div class="sub">${state.marketTrend}</div>
+        </div>
+        <div class="stat">
+          <h3>Portfolio</h3>
+          <div class="val">${fmt(portfolio)}</div>
+          <div class="sub">Started: $${CONFIG.START}</div>
+        </div>
+        <div class="stat">
+          <h3>Wallet</h3>
+          <div class="val">${fmt(state.wallet)}</div>
+          <div class="sub">Available</div>
+        </div>
+        <div class="stat">
+          <h3>Win Rate</h3>
+          <div class="val ${winRate >= 50 ? 'up' : ''}">${winRate.toFixed(0)}%</div>
+          <div class="sub">${wins}W / ${losses}L</div>
+        </div>
+        <div class="stat">
+          <h3>Fees</h3>
+          <div class="val" style="color:#eab308">${fmt(state.fees)}</div>
+          <div class="sub">0.7%/trade</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="main">
+    ${state.tab === 'dashboard' ? `
+      <div class="grid">
+        <!-- POSITIONS -->
+        <div class="card">
+          <div class="card-head">
+            <span>💼 Positions</span>
+            <span style="color:#666">${state.positions.length}</span>
+          </div>
+          <div class="card-body">
+            ${state.positions.length === 0 
+              ? `<div class="empty">Scanning for opportunities...</div>`
+              : sortedPos.map(pos => {
+                const {pnlPct, pnl, value} = getPosValue(pos);
+                const mom = getMomentum(pos.id);
+                const isHot = pnlPct >= 1;
+                const isCold = pnlPct <= -1;
+                return `
+                  <div class="pos-row ${isHot?'hot':''} ${isCold?'cold':''}">
+                    <div class="pos-info">
+                      <img src="${pos.img}">
+                      <div>
+                        <span class="sym">${pos.sym}</span> ${mom.trend}
+                        <span class="amt">${fmt(value)}</span>
+                      </div>
+                    </div>
+                    <div class="pos-pnl">
+                      <div class="p ${pnlPct>=0?'up':'down'}">${pct(pnlPct)}</div>
+                      <div class="v">${fmt(pnl)}</div>
+                    </div>
+                    <button class="btn btn-stop" style="padding:4px 8px;font-size:10px" onclick="sell(state.positions.find(p=>p.id==='${pos.id}'),'Manual')">SELL</button>
+                  </div>
+                `;
+              }).join('')
+            }
+          </div>
+        </div>
+        
+        <!-- LIVE MARKET -->
+        <div class="card">
+          <div class="card-head">
+            <span>📈 Live Market</span>
+            <span style="color:#22c55e">${state.cryptos.length} cryptos</span>
+          </div>
+          <div class="card-body">
+            ${movers.map(c => `
+              <div class="mkt-row">
+                <div class="mkt-info">
+                  <img src="${c.img}">
+                  <span>${c.sym}</span>
+                  <span>${c.mom.trend}</span>
+                </div>
+                <div class="mkt-stats">
+                  <span style="font-family:monospace">${fmt(c.price)}</span>
+                  <span class="chg ${c.h1>=0?'up':'down'}">${pct(c.h1)}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <!-- TRADES -->
+        <div class="card">
+          <div class="card-head">
+            <span>📜 Trades</span>
+            <span><span style="color:#22c55e">${wins}W</span> / <span style="color:#ef4444">${losses}L</span></span>
+          </div>
+          <div class="card-body">
+            ${state.trades.length === 0 
+              ? `<div class="empty">No trades yet...</div>`
+              : state.trades.slice(0,15).map(t => `
+                <div class="trade-row ${t.pnl>=0?'win':'loss'}">
+                  <div class="trade-top">
+                    <span>${t.sym}</span>
+                    <span class="pnl ${t.pnl>=0?'up':'down'}">${fmt(t.pnl)} (${pct(t.pnlPct)})</span>
+                  </div>
+                  <div class="trade-btm">${t.reason}</div>
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
+        
+        <!-- LOG -->
+        <div class="card log">
+          <div class="card-head">
+            <span>📋 Activity</span>
+            <span style="color:#666;font-size:10px">Tick #${state.tick}</span>
+          </div>
+          <div class="log-body">
+            ${state.logs.slice(0,30).map(l => `
+              <div class="log-entry ${l.type}">[${new Date(l.time).toLocaleTimeString()}] ${l.msg}</div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+    ` : ''}
+    
+    ${state.tab === 'crypto' ? `
+    <!-- CRYPTO TAB - ENHANCED -->
+    <div class="main">
+      <!-- Quick Stats -->
+      <div class="quick-stats">
+        <div class="quick-stat ${state.marketView==='gainers'?'active':''}" onclick="state.marketView=state.marketView==='gainers'?'all':'gainers';render()">
+          <h4>🚀 Top Gainers</h4>
+          <div class="val" style="color:#22c55e">${state.topGainers.length > 0 ? pct(state.topGainers[0]?.h1) : '--'}</div>
+          <div class="sub">${state.topGainers[0]?.sym || '--'}</div>
+        </div>
+        <div class="quick-stat ${state.marketView==='losers'?'active':''}" onclick="state.marketView=state.marketView==='losers'?'all':'losers';render()">
+          <h4>📉 Top Losers</h4>
+          <div class="val" style="color:#ef4444">${state.topLosers.length > 0 ? pct(state.topLosers[0]?.h1) : '--'}</div>
+          <div class="sub">${state.topLosers[0]?.sym || '--'}</div>
+        </div>
+        <div class="quick-stat ${state.marketView==='volume'?'active':''}" onclick="state.marketView=state.marketView==='volume'?'all':'volume';render()">
+          <h4>📊 High Volume</h4>
+          <div class="val" style="color:#3b82f6">${state.volumeSpikes.length}</div>
+          <div class="sub">Active coins</div>
+        </div>
+        <div class="quick-stat ${state.marketView==='momentum'?'active':''}" onclick="state.marketView=state.marketView==='momentum'?'all':'momentum';render()">
+          <h4>⚡ Momentum</h4>
+          <div class="val" style="color:#f97316">${state.momentumLeaders.length}</div>
+          <div class="sub">Hot movers</div>
+        </div>
+      </div>
+      
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-row">
+          <span class="filter-label">🔍 Search:</span>
+          <input type="text" class="search-input" placeholder="Search symbol..." value="${state.searchQuery}" oninput="state.searchQuery=this.value.toUpperCase();render()">
+          
+          <span class="filter-label" style="margin-left:15px">📋 View:</span>
+          <div class="filter-group">
+            <button class="filter-btn ${state.marketView==='all'?'active':''}" onclick="state.marketView='all';render()">All</button>
+            <button class="filter-btn green ${state.marketView==='gainers'?'active':''}" onclick="state.marketView='gainers';render()">Gainers</button>
+            <button class="filter-btn red ${state.marketView==='losers'?'active':''}" onclick="state.marketView='losers';render()">Losers</button>
+            <button class="filter-btn blue ${state.marketView==='oversold'?'active':''}" onclick="state.marketView='oversold';render()">Oversold</button>
+            <button class="filter-btn ${state.marketView==='overbought'?'active':''}" onclick="state.marketView='overbought';render()">Overbought</button>
+          </div>
+        </div>
+        
+        <div class="filter-row">
+          <span class="filter-label">💰 Price:</span>
+          <div class="filter-group">
+            <button class="filter-btn ${state.priceFilter==='all'?'active':''}" onclick="state.priceFilter='all';render()">All</button>
+            <button class="filter-btn ${state.priceFilter==='under1'?'active':''}" onclick="state.priceFilter='under1';render()">< $1</button>
+            <button class="filter-btn ${state.priceFilter==='1to10'?'active':''}" onclick="state.priceFilter='1to10';render()">$1-$10</button>
+            <button class="filter-btn ${state.priceFilter==='10to100'?'active':''}" onclick="state.priceFilter='10to100';render()">$10-$100</button>
+            <button class="filter-btn ${state.priceFilter==='100to1000'?'active':''}" onclick="state.priceFilter='100to1000';render()">$100-$1K</button>
+            <button class="filter-btn ${state.priceFilter==='over1000'?'active':''}" onclick="state.priceFilter='over1000';render()">$1K+</button>
+          </div>
+          
+          <span class="filter-label" style="margin-left:15px">📈 Change:</span>
+          <div class="filter-group">
+            <button class="filter-btn ${state.changeFilter==='all'?'active':''}" onclick="state.changeFilter='all';render()">All</button>
+            <button class="filter-btn green ${state.changeFilter==='up5'?'active':''}" onclick="state.changeFilter='up5';render()">+5%</button>
+            <button class="filter-btn green ${state.changeFilter==='up10'?'active':''}" onclick="state.changeFilter='up10';render()">+10%</button>
+            <button class="filter-btn red ${state.changeFilter==='down5'?'active':''}" onclick="state.changeFilter='down5';render()">-5%</button>
+            <button class="filter-btn red ${state.changeFilter==='down10'?'active':''}" onclick="state.changeFilter='down10';render()">-10%</button>
+          </div>
+        </div>
+        
+        <div class="filter-row">
+          <span class="filter-label">⚙️ Sort:</span>
+          <div class="filter-group">
+            <button class="filter-btn ${state.sortBy==='h1'?'active':''}" onclick="state.sortBy='h1';render()">1h %</button>
+            <button class="filter-btn ${state.sortBy==='h24'?'active':''}" onclick="state.sortBy='h24';render()">24h %</button>
+            <button class="filter-btn ${state.sortBy==='price'?'active':''}" onclick="state.sortBy='price';render()">Price</button>
+            <button class="filter-btn ${state.sortBy==='vol'?'active':''}" onclick="state.sortBy='vol';render()">Volume</button>
+            <button class="filter-btn ${state.sortBy==='name'?'active':''}" onclick="state.sortBy='name';render()">A-Z</button>
+          </div>
+          
+          <label style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:10px;color:#888;cursor:pointer">
+            <input type="checkbox" ${state.showOnlyTradeable?'checked':''} onchange="state.showOnlyTradeable=this.checked;render()">
+            High volume only
+          </label>
+        </div>
+      </div>
+      
+      <!-- Results Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px">
+        <span style="font-size:11px;color:#888">
+          Showing ${(() => {
+            let coins = filterCoins(state.cryptos);
+            return coins.length;
+          })()} of ${state.cryptos.length} coins
+          ${state.marketView !== 'all' ? ` • ${state.marketView.toUpperCase()}` : ''}
+        </span>
+        <span style="font-size:10px;color:#555">Click row to view details • Click BUY for quick trade</span>
+      </div>
+      
+      <!-- Market Table -->
+      <div class="card">
+        <div class="card-head" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:10px;font-size:10px;color:#666;padding:8px 12px">
+          <span>COIN</span>
+          <span style="text-align:right">PRICE</span>
+          <span style="text-align:right">1H %</span>
+          <span style="text-align:right">24H %</span>
+          <span style="text-align:right">RSI</span>
+          <span>ACTION</span>
+        </div>
+        <div class="card-body" style="max-height:500px;padding:0">
+          ${(() => {
+            let coins = filterCoins(state.cryptos);
+            return coins.length === 0 
+              ? '<div class="empty" style="padding:40px">No coins match filters</div>'
+              : coins.map(c => {
+                const analysis = analyzeAsset(c.id);
+                const rsiColor = analysis.rsi < 30 ? '#22c55e' : analysis.rsi > 70 ? '#ef4444' : '#888';
+                const rsiLabel = analysis.rsi < 30 ? 'OVERSOLD' : analysis.rsi > 70 ? 'OVERBOUGHT' : '';
+                const isHeld = state.positions.find(p => p.id === c.id);
+                return `
+                <div class="mkt-row-enhanced" onclick="state.selectedAsset=state.cryptos.find(x=>x.id==='${c.id}');render()">
+                  <div class="coin">
+                    <img src="${c.img}" onerror="this.style.display='none'">
+                    <div class="coin-info">
+                      <span class="coin-sym">${c.sym} ${c.mom?.trend || ''}</span>
+                      <span class="coin-name">${c.id}</span>
+                    </div>
+                    ${isHeld ? '<span style="background:#22c55e;color:#000;font-size:8px;padding:2px 4px;border-radius:2px;margin-left:4px">HOLDING</span>' : ''}
+                  </div>
+                  <div class="price">${fmt(c.price)}</div>
+                  <div class="change ${c.h1>=0?'up':'down'}">${pct(c.h1)}</div>
+                  <div class="change ${c.h24>=0?'up':'down'}" style="opacity:0.7">${pct(c.h24)}</div>
+                  <div class="rsi" style="background:${rsiColor}22;color:${rsiColor}">${analysis.rsi.toFixed(0)} ${rsiLabel}</div>
+                  <div class="actions" onclick="event.stopPropagation()">
+                    <button class="quick-buy" onclick="quickBuy('${c.id}')" ${isHeld?'disabled':''}>BUY</button>
+                    <button class="view-btn" onclick="state.selectedAsset=state.cryptos.find(x=>x.id==='${c.id}');render()">👁️</button>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          })()}
+        </div>
+      </div>
+    </div>
+    ` : ''}
+    
+    ${state.tab === 'stocks' ? `
+    <!-- STOCKS TAB -->
+    <div class="main">
+      <!-- Filter Bar for Stocks -->
+      <div class="filter-bar">
+        <div class="filter-row">
+          <span class="filter-label">🔍 Search:</span>
+          <input type="text" class="search-input" placeholder="Search symbol..." value="${state.searchQuery}" oninput="state.searchQuery=this.value.toUpperCase();render()">
+          
+          <span class="filter-label" style="margin-left:15px">📋 View:</span>
+          <div class="filter-group">
+            <button class="filter-btn ${state.marketView==='all'?'active':''}" onclick="state.marketView='all';render()">All</button>
+            <button class="filter-btn green ${state.marketView==='gainers'?'active':''}" onclick="state.marketView='gainers';render()">Gainers</button>
+            <button class="filter-btn red ${state.marketView==='losers'?'active':''}" onclick="state.marketView='losers';render()">Losers</button>
+          </div>
+        </div>
+        
+        <div class="filter-row">
+          <span class="filter-label">🏢 Sector:</span>
+          <div class="filter-group">
+            <button class="filter-btn ${state.sectorFilter==='all'?'active':''}" onclick="state.sectorFilter='all';render()">All</button>
+            <button class="filter-btn ${state.sectorFilter==='Tech'?'active':''}" onclick="state.sectorFilter='Tech';render()">Tech</button>
+            <button class="filter-btn ${state.sectorFilter==='Finance'?'active':''}" onclick="state.sectorFilter='Finance';render()">Finance</button>
+            <button class="filter-btn ${state.sectorFilter==='Health'?'active':''}" onclick="state.sectorFilter='Health';render()">Health</button>
+            <button class="filter-btn ${state.sectorFilter==='Consumer'?'active':''}" onclick="state.sectorFilter='Consumer';render()">Consumer</button>
+            <button class="filter-btn ${state.sectorFilter==='Energy'?'active':''}" onclick="state.sectorFilter='Energy';render()">Energy</button>
+            <button class="filter-btn ${state.sectorFilter==='Industrial'?'active':''}" onclick="state.sectorFilter='Industrial';render()">Industrial</button>
+            <button class="filter-btn ${state.sectorFilter==='ETF'?'active':''}" onclick="state.sectorFilter='ETF';render()">ETFs</button>
+          </div>
+        </div>
+        
+        <div class="filter-row">
+          <span class="filter-label">💰 Price:</span>
+          <div class="filter-group">
+            <button class="filter-btn ${state.priceFilter==='all'?'active':''}" onclick="state.priceFilter='all';render()">All</button>
+            <button class="filter-btn ${state.priceFilter==='under1'?'active':''}" onclick="state.priceFilter='under1';render()">< $10</button>
+            <button class="filter-btn ${state.priceFilter==='1to10'?'active':''}" onclick="state.priceFilter='1to10';render()">$10-$50</button>
+            <button class="filter-btn ${state.priceFilter==='10to100'?'active':''}" onclick="state.priceFilter='10to100';render()">$50-$200</button>
+            <button class="filter-btn ${state.priceFilter==='100to1000'?'active':''}" onclick="state.priceFilter='100to1000';render()">$200-$500</button>
+            <button class="filter-btn ${state.priceFilter==='over1000'?'active':''}" onclick="state.priceFilter='over1000';render()">$500+</button>
+          </div>
+          
+          <span class="filter-label" style="margin-left:15px">⚙️ Sort:</span>
+          <div class="filter-group">
+            <button class="filter-btn ${state.sortBy==='h1'?'active':''}" onclick="state.sortBy='h1';render()">% Change</button>
+            <button class="filter-btn ${state.sortBy==='price'?'active':''}" onclick="state.sortBy='price';render()">Price</button>
+            <button class="filter-btn ${state.sortBy==='vol'?'active':''}" onclick="state.sortBy='vol';render()">Volume</button>
+            <button class="filter-btn ${state.sortBy==='name'?'active':''}" onclick="state.sortBy='name';render()">A-Z</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Results Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px">
+        <span style="font-size:11px;color:#888">
+          Showing ${filterStocks(state.stocks).length} of ${state.stocks.length} stocks
+          ${state.sectorFilter !== 'all' ? ` • ${state.sectorFilter}` : ''}
+        </span>
+        <span style="font-size:10px;color:#555">Alpaca fee: ~$0 commission</span>
+      </div>
+      
+      <!-- Stock Table -->
+      <div class="card">
+        <div class="card-head" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;font-size:10px;color:#666;padding:8px 12px">
+          <span>STOCK</span>
+          <span style="text-align:right">PRICE</span>
+          <span style="text-align:right">CHANGE</span>
+          <span style="text-align:right">VOLUME</span>
+          <span>ACTION</span>
+        </div>
+        <div class="card-body" style="max-height:600px;padding:0">
+          ${(() => {
+            const stocks = filterStocks(state.stocks);
+            return stocks.length === 0 
+              ? '<div class="empty" style="padding:40px">No stocks match filters</div>'
+              : stocks.map(s => {
+                const isHeld = state.positions.find(p => p.id === s.id);
+                return `
+                <div class="mkt-row-enhanced" style="grid-template-columns:2fr 1fr 1fr 1fr auto" onclick="selectStock('${s.id}')">
+                  <div class="coin">
+                    <div style="width:32px;height:32px;background:${s.h24>=0?'#0a2a0a':'#2a0a0a'};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${s.h24>=0?'#22c55e':'#ef4444'}">${s.sym.slice(0,2)}</div>
+                    <div class="coin-info">
+                      <span class="coin-sym">${s.sym}</span>
+                      <span class="coin-name">${s.name} ${s.sector ? '• '+s.sector : ''}</span>
+                    </div>
+                    ${isHeld ? '<span style="background:#22c55e;color:#000;font-size:8px;padding:2px 4px;border-radius:2px;margin-left:4px">HOLDING</span>' : ''}
+                  </div>
+                  <div class="price">${fmt(s.price)}</div>
+                  <div class="change ${s.h24>=0?'up':'down'}">${pct(s.h24)}</div>
+                  <div class="volume">${s.vol > 1e6 ? (s.vol/1e6).toFixed(1)+'M' : (s.vol/1e3).toFixed(0)+'K'}</div>
+                  <div class="actions" onclick="event.stopPropagation()">
+                    <button class="quick-buy" onclick="quickBuyStock('${s.id}')" ${isHeld?'disabled':''}>BUY</button>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          })()}
+        </div>
+      </div>
+    </div>
+    ` : ''}
+    
+    ${state.tab === 'positions' ? `
+    <!-- POSITIONS TAB -->
+    <div class="main">
+      <div class="card">
+        <div class="card-head">
+          <span>💼 All Positions</span>
+          <div>
+            <span style="color:#666;margin-right:10px">${state.positions.length} open</span>
+            <button class="btn btn-stop" style="padding:4px 12px;font-size:11px" onclick="sellAllPositions()" ${state.positions.length===0?'disabled':''}>
+              SELL ALL
+            </button>
+          </div>
+        </div>
+        <div class="card-body" style="max-height:500px">
+          ${state.positions.length === 0 
+            ? `<div class="empty">No open positions</div>`
+            : sortedPos.map(pos => {
+                const {pnlPct, pnl, value, price} = getPosValue(pos);
+                const mom = getMomentum(pos.id);
+                const isHot = pnlPct >= 1;
+                const isCold = pnlPct <= -1;
+                return `
+                  <div class="pos-row ${isHot?'hot':''} ${isCold?'cold':''}" style="grid-template-columns:2fr 1fr 1fr 1fr auto">
+                    <div class="pos-info" style="cursor:pointer" onclick="state.selectedAsset=state.cryptos.find(x=>x.id==='${pos.id}');render()">
+                      <img src="${pos.img}">
+                      <div>
+                        <span class="sym">${pos.sym}</span> ${mom.trend}
+                        <span class="amt">${pos.qty.toFixed(6)} @ ${fmt(pos.entry)}</span>
+                      </div>
+                    </div>
+                    <div style="text-align:right">
+                      <div style="font-size:12px">${fmt(price)}</div>
+                      <div style="font-size:9px;color:#666">current</div>
+                    </div>
+                    <div style="text-align:right">
+                      <div style="font-size:12px">${fmt(value)}</div>
+                      <div style="font-size:9px;color:#666">value</div>
+                    </div>
+                    <div class="pos-pnl">
+                      <div class="p ${pnlPct>=0?'up':'down'}">${pct(pnlPct)}</div>
+                      <div class="v">${fmt(pnl)}</div>
+                    </div>
+                    <button class="btn btn-stop" style="padding:6px 12px;font-size:11px" onclick="sell(state.positions.find(p=>p.id==='${pos.id}'),'Manual')">SELL</button>
+                  </div>
+                `;
+              }).join('')
+          }
+        </div>
+      </div>
+    </div>
+    ` : ''}
+    
+    ${state.tab === 'trades' ? `
+    <!-- TRADES TAB -->
+    <div class="main">
+      <div class="card">
+        <div class="card-head">
+          <span>📜 Trade History</span>
+          <span><span style="color:#22c55e">${wins}W</span> / <span style="color:#ef4444">${losses}L</span> (${winRate.toFixed(0)}%)</span>
+        </div>
+        <div class="card-body" style="max-height:500px">
+          ${state.trades.length === 0 
+            ? `<div class="empty">No trades yet</div>`
+            : state.trades.map(t => `
+              <div class="trade-row ${t.pnl>=0?'win':'loss'}">
+                <div class="trade-top">
+                  <span style="font-weight:700">${t.sym}</span>
+                  <span class="pnl ${t.pnl>=0?'up':'down'}">${t.pnl>=0?'+':''}${fmt(t.pnl)} (${pct(t.pnlPct)})</span>
+                </div>
+                <div class="trade-btm">
+                  ${fmt(t.entry)} → ${fmt(t.exit)} • ${t.reason} • ${new Date(t.time).toLocaleTimeString()}
+                </div>
+              </div>
+            `).join('')
+          }
+        </div>
+      </div>
+    </div>
+    ` : ''}
+  `;
+};
+
+// Init
+const init = () => {
+  loadSettings();
+  fetchData();
+  
+  // Refresh prices every 6 seconds
+  setInterval(fetchData, 6000);
+  
+  // Run bot every 2 seconds
+  setInterval(runBot, 2000);
+};
+
+// Select stock for detail view
+const selectStock = (id) => {
+  const stock = state.stocks.find(s => s.id === id);
+  if(stock) {
+    state.selectedAsset = stock;
+    render();
+  }
+};
+
+// Buy any asset (crypto or stock)
+const buyAsset = (id, isStock) => {
+  let asset;
+  if(isStock) {
+    asset = state.stocks.find(s => s.id === id);
+  } else {
+    asset = state.cryptos.find(c => c.id === id);
+  }
+  
+  if(!asset) return;
+  
+  const amount = Math.min(state.wallet * 0.1, 20);
+  if(amount < CONFIG.MIN_POS) {
+    log('❌ Insufficient funds', 'warn');
+    return;
+  }
+  
+  // Different fee structure for stocks vs crypto
+  const fee = isStock ? amount * 0.00003 : amount * CONFIG.FEE; // Stocks ~0.003%, Crypto 0.7%
+  const net = amount - fee;
+  const qty = net / asset.price;
+  
+  const existing = state.positions.find(p => p.id === asset.id);
+  if(existing) {
+    const totalCost = (existing.qty * existing.entry) + net;
+    const totalQty = existing.qty + qty;
+    existing.entry = totalCost / totalQty;
+    existing.qty = totalQty;
+  } else {
+    state.positions.push({
+      id: asset.id,
+      sym: asset.sym,
+      img: asset.img || null,
+      qty,
+      entry: asset.price,
+      time: Date.now(),
+      type: isStock ? 'stock' : 'crypto'
+    });
+  }
+  
+  state.wallet -= amount;
+  state.fees += fee;
+  log(`📥 BUY ${asset.sym} ${fmt(amount)} @ ${fmt(asset.price)} (fee: ${fmt(fee)})`, 'trade');
+  state.selectedAsset = null;
+  render();
+};
+
+// Change strategy live
+const setStrategy = (strategyKey) => {
+  if(STRATEGIES[strategyKey]) {
+    state.strategy = strategyKey;
+    const s = STRATEGIES[strategyKey];
+    log(`📊 Strategy: ${s.name} - ${s.desc}`, 'info');
+    
+    // Show warning for risky strategies
+    if(strategyKey === 'yolo') {
+      alert('⚠️ YOLO MODE ACTIVATED!\n\nThis is MAXIMUM RISK.\n• Can lose everything quickly\n• Uses largest position sizes\n• Most aggressive entries/exits\n\nOnly use with money you can afford to lose!');
+    }
+    
+    render();
+  }
+};
+
+// Expose functions
+window.sell = sell;
+window.sellAllPositions = sellAllPositions;
+window.state = state;
+window.log = log;
+window.render = render;
+window.buy = buy;
+window.testCoinbase = testCoinbase;
+window.testAlpaca = testAlpaca;
+window.saveSettings = saveSettings;
+window.getMomentum = getMomentum;
+window.selectStock = selectStock;
+window.buyAsset = buyAsset;
+window.setStrategy = setStrategy;
+window.STRATEGIES = STRATEGIES;
+window.fetchSentiment = fetchSentiment;
+window.analyzeMarketTrends = analyzeMarketTrends;
+window.filterCoins = filterCoins;
+window.filterStocks = filterStocks;
+window.quickBuy = quickBuy;
+window.quickBuyStock = quickBuyStock;
+window.analyzeAsset = analyzeAsset;
+
+init();
+</script>
+</body>
+</html>
